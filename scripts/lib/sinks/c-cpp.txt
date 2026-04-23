@@ -1,0 +1,16 @@
+# C/C++ dangerous sinks — category TAB regex
+MEMORY_UNCHECKED	\b(strcpy|strcat|sprintf|vsprintf|gets|scanf)\s*\(
+MEMORY_SIZED	\b(memcpy|memmove|memset|strncpy|strncat)\s*\(
+FORMAT_STRING	\b(printf|fprintf|snprintf|syslog|err|warn)\s*\([^,]*\s*\)
+FORMAT_STRING	\b(printf|fprintf|syslog)\s*\(\s*(?!['"])
+ALLOC_COMPUTED	\b(malloc|calloc|realloc|alloca|valloc)\s*\([^)]*[*+-]
+ALLOC_COMPUTED	\bnew\s+\w+\s*\[[^]]*[*+-]
+INT_ARITH	\b(size|length|count|len|nmemb|n)\s*[*+]\s*\w+
+COMMAND_EXEC	\b(system|popen|execl|execlp|execle|execv|execvp|execve)\s*\(
+RACE_TOCTOU	\b(access|stat|lstat)\s*\(
+UAF_PATTERN	\bfree\s*\(\s*\w+\s*\)\s*;(?![^;]*=\s*NULL)
+DOUBLE_FREE	\bfree\s*\(
+OFF_BY_ONE	<=\s*(sizeof|strlen)\s*\(
+SIGNED_CMP	\b(int|int32_t|ssize_t)\s+\w+\s*=\s*(recv|read|fread)
+SYMLINK_FOLLOW	\bfopen\s*\(
+PRIVILEGE	\b(setuid|seteuid|setgid|chown|chmod)\s*\(

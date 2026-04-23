@@ -1,0 +1,31 @@
+# Reports and working dirs (never commit scan output)
+reports/
+findings/
+validated/
+scratch/
+.scratch/
+
+# Per-run caches
+slices/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Never commit the weapon-stage even if someone drops it here
+scripts/exec-validator.sh
+scripts/mythos-exploit.sh
+prompts/exec-validator.md
+prompts/exploit-sketch.md

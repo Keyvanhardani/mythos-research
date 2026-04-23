@@ -1,0 +1,59 @@
+# PHP dangerous sinks — one regex per line, category TAB regex
+# Lines starting with # are comments. Empty lines ignored.
+# Regexes are ripgrep-compatible (PCRE2 subset).
+OBJECT_INJECTION	\bunserialize\s*\(
+CODE_EVAL	(?<![>:.\w])eval\s*\(
+CODE_EVAL	(?<![>:.\w])assert\s*\(\s*['"]
+CODE_EVAL	\bpreg_replace\s*\([^)]*['"][^'"]*/[ismuxADSUXJ]*e[ismuxADSUXJ]*['"]
+COMMAND_EXEC	(?<![>:.\w])(system|exec|shell_exec|passthru|popen|proc_open)\s*\(
+COMMAND_EXEC	`[^`]*\$
+DYNAMIC_INCLUDE	(?<![>:.\w])(include|require)(_once)?\s*[\(\s]+\$
+FILE_READ	\b(file_get_contents|fopen|readfile|file|fpassthru)\s*\(
+FILE_WRITE	\b(file_put_contents|fwrite|move_uploaded_file)\s*\(
+SSRF	\bcurl_exec\s*\(
+SSRF	\bfile_get_contents\s*\([^)]*(http|ftp|gopher|php://|data://)
+XXE	\b(simplexml_load_string|simplexml_load_file|DOMDocument\s*->\s*load|loadXML)\s*\(
+XXE	\bnew\s+SoapClient\s*\(
+SQL_INJECTION	->\s*(query|exec|unbuffered_query|real_query)\s*\([^)]*\.
+SQL_INJECTION	\bmysqli?_query\s*\([^)]*\.
+SQL_INJECTION	->\s*execute\s*\(\s*\[?\s*\.
+HEADER_INJECTION	->\s*addHeader\s*\([^)]*\.
+HEADER_INJECTION	\bheader\s*\([^)]*\.
+XSS_RAW	\becho\s+\$_(GET|POST|REQUEST|COOKIE|SERVER)
+XSS_RAW	\{!!\s*\$
+VAR_INJECTION	\b(extract|parse_str)\s*\(
+CALLBACK_INJECTION	\bcall_user_func(_array)?\s*\(\s*\$
+WEAK_COMPARE	==\s*\$_(GET|POST|REQUEST|COOKIE)
+WEAK_COMPARE	\bstrcmp\s*\([^)]+\)\s*==\s*0
+# ---------------------------------------------------------------------------
+# v3.1 — semantic-flag sinks: sanitizer function definitions and framework
+# API footguns. These fire on definitions / specific API usage rather than
+# generically-dangerous calls. Catches sanitizer-with-gap bugs (like
+# sanitizer-with-gap bugs) and framework-footgun bugs.
+# ---------------------------------------------------------------------------
+SANITIZER_REVIEW	\b(public|private|protected|static)?\s*function\s+(_|)?(strip|sanitize|escape|filter|clean|remove|scrub|redact|mask|normalize|canonicalize)[A-Z_][A-Za-z0-9_]*\s*\(
+SANITIZER_REVIEW	\b(public|private|protected|static)?\s*function\s+(_|)?(isSafe|is_safe|safe_|safe|allow|authorize|checkAccess|check_access|ensure|enforce|validate|verify)[A-Z_][A-Za-z0-9_]*\s*\(
+SANITIZER_REVIEW	\bfunction\s+wp_kses(_\w+)?\s*\(
+# --- WordPress core footguns ---
+FRAMEWORK_FOOTGUN	\badd_action\s*\(\s*['"]wp_ajax_nopriv_
+FRAMEWORK_FOOTGUN	\badd_action\s*\(\s*['"]admin_post_nopriv_
+FRAMEWORK_FOOTGUN	\bcheck_ajax_referer\s*\([^)]*,\s*\$?[^,)]+,\s*false
+FRAMEWORK_FOOTGUN	\bwp_verify_nonce\s*\(
+FRAMEWORK_FOOTGUN	\bcurrent_user_can\s*\(\s*['"](read|edit_posts)['"]
+FRAMEWORK_FOOTGUN	\bwp_remote_(get|post|request|head|retrieve)\s*\([^)]*\$
+FRAMEWORK_FOOTGUN	\bwp_redirect\s*\(\s*\$
+FRAMEWORK_FOOTGUN	\bwp_safe_redirect\s*\(\s*\$
+FRAMEWORK_FOOTGUN	\besc_url_raw\s*\(
+FRAMEWORK_FOOTGUN	\bmaybe_unserialize\s*\(
+FRAMEWORK_FOOTGUN	\bget_option\s*\([^)]+\).*(?:unserialize|eval)
+# --- Symfony / Doctrine footguns ---
+FRAMEWORK_FOOTGUN	->\s*createQuery\s*\([^)]*\.
+FRAMEWORK_FOOTGUN	->\s*createQueryBuilder\s*\(\).*->\s*(expr|where|andWhere|orWhere)\([^)]*\.
+FRAMEWORK_FOOTGUN	#\[IsGranted\s*\(\s*['"](ROLE_USER|IS_AUTHENTICATED_FULLY|PUBLIC_ACCESS)
+FRAMEWORK_FOOTGUN	->\s*isGranted\s*\(\s*['"]ROLE_USER
+FRAMEWORK_FOOTGUN	\bnew\s+Process\s*\(\s*['"].*\$
+FRAMEWORK_FOOTGUN	\bTwig\\\\Environment.*autoescape['"]\s*=>\s*false
+# --- general PHP footguns ---
+FRAMEWORK_FOOTGUN	\bextract\s*\(\s*\$_(GET|POST|REQUEST|COOKIE)
+FRAMEWORK_FOOTGUN	\$\{\s*\$
+FRAMEWORK_FOOTGUN	\bcreate_function\s*\(

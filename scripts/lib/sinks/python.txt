@@ -1,0 +1,59 @@
+# Python dangerous sinks — category TAB regex
+DESERIALIZE	\b(pickle|cPickle|_pickle)\.(loads?|Unpickler)\s*\(
+DESERIALIZE	\byaml\.(unsafe_)?(load|full_load)\s*\(
+DESERIALIZE	\bmarshal\.loads?\s*\(
+DESERIALIZE	\bjsonpickle\.(decode|loads)\s*\(
+DESERIALIZE	\bdill\.(loads?)\s*\(
+CODE_EVAL	\b(eval|exec|compile)\s*\(
+CODE_EVAL	\b__import__\s*\(
+CODE_EVAL	\bimportlib\.import_module\s*\(
+TEMPLATE_INJECT	\b(Template|Environment)\s*\([^)]*\)\s*\.\s*render
+TEMPLATE_INJECT	\brender_template_string\s*\(
+COMMAND_EXEC	\bsubprocess\.(run|Popen|call|check_output|check_call)\s*\([^)]*shell\s*=\s*True
+COMMAND_EXEC	\bos\.(system|popen)\s*\(
+COMMAND_EXEC	\bcommands\.(getoutput|getstatusoutput)\s*\(
+PATH_TRAVERSAL	\bopen\s*\(\s*(request|user|input|args|form|query)
+PATH_TRAVERSAL	\bos\.path\.join\s*\([^)]*(request|user|input)
+PATH_TRAVERSAL	\b(send_file|send_from_directory|FileResponse)\s*\(
+ZIP_SLIP	\b(tarfile|zipfile)\..*\.extractall\s*\(
+ZIP_SLIP	\.extract\s*\([^)]*\)(?!\s*,\s*filter)
+SSRF	\brequests\.(get|post|put|delete|request)\s*\([^)]*(url|user|request|input)
+SSRF	\burllib.*\.urlopen\s*\(
+SSRF	\bhttpx\.(get|post|Client)\s*\(
+XXE	\bxml\.etree\.ElementTree\.(parse|fromstring)\s*\(
+XXE	\blxml\.etree\.(parse|fromstring|XMLParser)\s*\(
+SQL_INJECTION	\.\s*(execute|executemany)\s*\(\s*[fF]?['"]
+SQL_INJECTION	\.\s*(raw|extra)\s*\(
+SQL_INJECTION	\btext\s*\(\s*[fF]?['"]
+WEAK_CRYPTO	\bhashlib\.(md5|sha1)\s*\(
+WEAK_CRYPTO	\brandom\.(random|randint|choice|choices)\s*\(
+WEAK_CRYPTO	\bjwt\.decode\s*\([^)]*verify\s*=\s*False
+WEAK_CRYPTO	\bjwt\.decode\s*\([^)]*algorithms\s*=\s*\[?['"]none
+REFLECTION	\bgetattr\s*\([^)]*,\s*(request|user|input)
+FORMAT_INJECT	\.format\s*\(\*
+XSS	\bescape\s*=\s*False
+XSS	\bMarkup\s*\(
+XSS	\bmark_safe\s*\(
+XSS	\|\s*safe\b
+XSS	\bHTML\s*\([^)]*escape\s*=\s*False
+XSS	\bhtml\.write_html\s*\(
+XSS	\bhtml\.write\s*\(\s*HTML\b
+XSS	\bautoescape\s*=\s*False
+LIVESTATUS_INJECT	[fF]['"][^'"]*Filter:[^'"]*\{[a-zA-Z_]
+LIVESTATUS_INJECT	['"]Filter:[^'"]*%s['"]\s*%
+OPEN_REDIRECT	\.location\s*=.*\b(request|user_input|args|form|query_string)
+OPEN_REDIRECT	\bredirect\s*\(\s*(request|args|form|query)
+# ---------------------------------------------------------------------------
+# v3.1 — Semantic-flag sinks. These fire on function *definitions* or API
+# *usage* patterns that the hunter should review for logic correctness, not
+# because the call itself is obviously dangerous. They catch the class of
+# bugs where a sanitizer has an incomplete branch (kas _strip_credentials).
+# ---------------------------------------------------------------------------
+SANITIZER_REVIEW	^\s*def\s+_?(strip|sanitize|escape|filter|clean|remove|scrub|redact|mask|normalize|canonicalize)_[a-z_]+\s*\(
+SANITIZER_REVIEW	^\s*def\s+_?(is_safe|safe_|allow_|authorize|check_access|ensure_|enforce_)[a-z_]+\s*\(
+SANITIZER_REVIEW	^\s*def\s+_?(validate|verify)_(url|input|path|filename|request|host|origin|redirect|identity|signature|token|certificate|cert)\w*\s*\(
+FRAMEWORK_FOOTGUN	\burlparse\s*\(\s*[a-zA-Z_][a-zA-Z_0-9]*\s*\)\s*\.(username|password|hostname)
+FRAMEWORK_FOOTGUN	\bast\.parse\s*\([^)]*\).*\bexec\s*\(
+FRAMEWORK_FOOTGUN	\bhandle_overrides?\s*\(
+FRAMEWORK_FOOTGUN	\bshell\s*=\s*True\b
+FRAMEWORK_FOOTGUN	\bverify\s*=\s*False\b
