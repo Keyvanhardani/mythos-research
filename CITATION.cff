@@ -13,6 +13,13 @@ version: "1.0.0"
 url: "https://github.com/Keyvanhardani/mythos-research"
 repository-code: "https://github.com/Keyvanhardani/mythos-research"
 license: Apache-2.0
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.19727857"
+    description: "Concept DOI — resolves to the latest archived version on Zenodo."
+  - type: doi
+    value: "10.5281/zenodo.19727858"
+    description: "Version DOI for v1.0.2 (first archived release)."
 keywords:
   - large language models
   - vulnerability discovery
@@ -43,4 +50,5 @@ preferred-citation:
   month: 4
   institution:
     name: "Independent"
-  url: "https://github.com/Keyvanhardani/mythos-research"
+  url: "https://doi.org/10.5281/zenodo.19727857"
+  doi: "10.5281/zenodo.19727857"

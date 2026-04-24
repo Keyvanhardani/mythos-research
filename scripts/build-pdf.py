@@ -43,6 +43,8 @@ AUTHOR = "Keyvan Hardani"
 AFFIL = "Independent Applied AI Research"
 CONTACT = "hello@keyvan.ai"
 ORCID = "0009-0000-6003-8826"
+DOI_CONCEPT = "10.5281/zenodo.19727857"
+DOI_VERSION = "10.5281/zenodo.19727858"
 LINKS = "keyvan.ai &middot; github.com/Keyvanhardani &middot; linkedin.com/in/keyvanhardani"
 DATE = "April 2026"
 VERSION = "Research Report, version 1.0 (Research Edition v3.1-preview)"
@@ -298,6 +300,7 @@ def build_cover_html() -> str:
         <div class="affil">{AFFIL}</div>
         <div class="contact">{CONTACT}</div>
         <div class="contact">ORCID: <a href="https://orcid.org/{ORCID}">{ORCID}</a></div>
+        <div class="contact">DOI: <a href="https://doi.org/{DOI_CONCEPT}">{DOI_CONCEPT}</a></div>
       </div>
 
       <div class="footer-block">
@@ -306,6 +309,8 @@ def build_cover_html() -> str:
         <div class="row"><span class="k">License</span> Apache&nbsp;License&nbsp;2.0 &middot; research and self-scan use</div>
         <div class="row"><span class="k">Repository</span> github.com/Keyvanhardani/mythos-research</div>
         <div class="row"><span class="k">ORCID</span> orcid.org/{ORCID}</div>
+        <div class="row"><span class="k">DOI (concept)</span> doi.org/{DOI_CONCEPT}</div>
+        <div class="row"><span class="k">DOI (v1.0.2)</span> doi.org/{DOI_VERSION}</div>
         <div class="row"><span class="k">Web</span> {LINKS}</div>
       </div>
     </section>
@@ -360,8 +365,8 @@ def build_closing_html() -> str:
       <div class="citation">Hardani, K. (2026). An Outside-In Replication of Project Glasswing:
 Mythos Research Edition &ndash; a sink-guided, agentic pipeline for
 defensive vulnerability discovery with a general-purpose frontier model.
-Independent research report, v1.0.
-https://github.com/Keyvanhardani/mythos-research</div>
+Independent research report, v1.0.2.
+https://doi.org/{DOI_CONCEPT}</div>
 
       <p class="note">The scaffold, prompts, sink catalogues and orchestrator
       referenced throughout this report are published under the Apache&nbsp;License&nbsp;2.0

@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://doi.org/10.5281/zenodo.19727857"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.19727857.svg"/></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square"/></a>
   <a href="https://github.com/Keyvanhardani/mythos-research/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Keyvanhardani/mythos-research?style=flat-square&color=slategray"/></a>
   <a href="dist/Mythos-Research-Edition.pdf"><img alt="Research report (PDF)" src="https://img.shields.io/badge/paper-PDF-7a5442?style=flat-square"/></a>
@@ -17,14 +18,6 @@
   <img alt="Research Use" src="https://img.shields.io/badge/use-research_%26_self--scan-C87D4F?style=flat-square"/>
   <img alt="Disclosure" src="https://img.shields.io/badge/disclosure-coordinated_only-7a5442?style=flat-square"/>
 </p>
-
-<!-- Zenodo DOI badge: will be populated automatically once the v1.0.0 GitHub
-     release is archived by the Zenodo-GitHub integration. Uncomment and
-     replace XXXXX with the record ID after the first release is archived.
-<p align="center">
-  <a href="https://doi.org/10.5281/zenodo.XXXXXXX"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg"/></a>
-</p>
--->
 
 
 ---
@@ -194,13 +187,16 @@ repository. A machine-readable `CITATION.cff` is provided at the repository root
 
 ```bibtex
 @techreport{hardani2026mythosResearch,
-  author      = {Hardani, Keyvan},
-  title       = {An Outside-In Replication of Project Glasswing: Mythos Research Edition},
-  institution = {Independent},
-  year        = {2026},
-  month       = apr,
-  url         = {https://github.com/Keyvanhardani/mythos-research},
-  note        = {ORCID 0009-0000-6003-8826}
+  author       = {Hardani, Keyvan},
+  title        = {An Outside-In Replication of Project Glasswing: Mythos Research Edition},
+  institution  = {Independent},
+  year         = {2026},
+  month        = apr,
+  doi          = {10.5281/zenodo.19727857},
+  url          = {https://doi.org/10.5281/zenodo.19727857},
+  note         = {ORCID 0009-0000-6003-8826.
+                  Concept DOI; for version-specific citation use
+                  10.5281/zenodo.19727858 (v1.0.2).}
 }
 ```
 
