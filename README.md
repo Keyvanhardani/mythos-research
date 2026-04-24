@@ -11,10 +11,21 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square"/></a>
+  <a href="https://github.com/Keyvanhardani/mythos-research/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Keyvanhardani/mythos-research?style=flat-square&color=slategray"/></a>
+  <a href="dist/Mythos-Research-Edition.pdf"><img alt="Research report (PDF)" src="https://img.shields.io/badge/paper-PDF-7a5442?style=flat-square"/></a>
+  <a href="https://orcid.org/0009-0000-6003-8826"><img alt="ORCID" src="https://img.shields.io/badge/ORCID-0009--0000--6003--8826-A6CE39?style=flat-square&logo=orcid&logoColor=white"/></a>
   <img alt="Research Use" src="https://img.shields.io/badge/use-research_%26_self--scan-C87D4F?style=flat-square"/>
   <img alt="Disclosure" src="https://img.shields.io/badge/disclosure-coordinated_only-7a5442?style=flat-square"/>
-  <img alt="Status" src="https://img.shields.io/badge/status-v3.1--preview-slategray?style=flat-square"/>
 </p>
+
+<!-- Zenodo DOI badge: will be populated automatically once the v1.0.0 GitHub
+     release is archived by the Zenodo-GitHub integration. Uncomment and
+     replace XXXXX with the record ID after the first release is archived.
+<p align="center">
+  <a href="https://doi.org/10.5281/zenodo.XXXXXXX"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg"/></a>
+</p>
+-->
+
 
 ---
 
@@ -170,7 +181,28 @@ same pattern Anthropic describes in their paper.
 
 - [`RESEARCH.md`](RESEARCH.md) — full research analysis: what Glasswing actually does, the benchmark
   gap, what scaffolding can and cannot close, prompting techniques that work, multi-agent patterns.
+- [`dist/Mythos-Research-Edition.pdf`](dist/Mythos-Research-Edition.pdf) — the same report as a
+  publication-ready PDF (Charter / DejaVu Sans, TU Darmstadt-style formatting).
+- [`paper/`](paper/) — arXiv-ready LaTeX source (`paper.tex` + `references.bib` + `Makefile`).
 - [`scripts/V3_DESIGN.md`](scripts/V3_DESIGN.md) — v3 design doc (goals, deltas to v2, metrics).
+
+## Cite
+
+If you use Mythos Research Edition in academic or professional work, please cite the report and the
+repository. A machine-readable `CITATION.cff` is provided at the repository root; GitHub renders a
+"Cite this repository" button from it. Suggested BibTeX:
+
+```bibtex
+@techreport{hardani2026mythosResearch,
+  author      = {Hardani, Keyvan},
+  title       = {An Outside-In Replication of Project Glasswing: Mythos Research Edition},
+  institution = {Independent},
+  year        = {2026},
+  month       = apr,
+  url         = {https://github.com/Keyvanhardani/mythos-research},
+  note        = {ORCID 0009-0000-6003-8826}
+}
+```
 
 ## License
 
@@ -183,4 +215,4 @@ disclosure is expected for any vulnerability surfaced with Mythos's help.
 ## Author
 
 **Keyvan Hardani** — Applied AI Researcher · Engineer.
-[keyvan.ai](https://keyvan.ai) · [github.com/Keyvanhardani](https://github.com/Keyvanhardani) · [linkedin.com/in/keyvanhardani](https://linkedin.com/in/keyvanhardani)
+[keyvan.ai](https://keyvan.ai) · [github.com/Keyvanhardani](https://github.com/Keyvanhardani) · [linkedin.com/in/keyvanhardani](https://linkedin.com/in/keyvanhardani) · ORCID [0009-0000-6003-8826](https://orcid.org/0009-0000-6003-8826) · [hello@keyvan.ai](mailto:hello@keyvan.ai)

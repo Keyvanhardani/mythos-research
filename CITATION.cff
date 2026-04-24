@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the repository and the accompanying research report."
+title: "Mythos Research Edition"
+type: software
+authors:
+  - given-names: Keyvan
+    family-names: Hardani
+    orcid: "https://orcid.org/0009-0000-6003-8826"
+    affiliation: "Independent Applied AI Research"
+    email: "hello@keyvan.ai"
+date-released: "2026-04-24"
+version: "1.0.0"
+url: "https://github.com/Keyvanhardani/mythos-research"
+repository-code: "https://github.com/Keyvanhardani/mythos-research"
+license: Apache-2.0
+keywords:
+  - large language models
+  - vulnerability discovery
+  - agentic scaffolding
+  - prompt engineering
+  - sink analysis
+  - coordinated disclosure
+  - Claude
+  - Glasswing
+abstract: >
+  An open-source, sink-guided agentic pipeline for defensive vulnerability
+  discovery. Mythos Research Edition is an outside-in replication of the
+  scaffold described in Anthropic's April 2026 Mythos Preview (Project
+  Glasswing), built around a general-purpose frontier model (Claude Opus 4.7).
+  The seven-phase pipeline covers language detection, sink slicing, file
+  ranking, agentic hunting, skeptical validation, live-execution (held out of
+  the public repository), and aggregation.
+preferred-citation:
+  type: report
+  title: "An Outside-In Replication of Project Glasswing: Mythos Research Edition — a sink-guided, agentic pipeline for defensive vulnerability discovery with a general-purpose frontier model"
+  authors:
+    - given-names: Keyvan
+      family-names: Hardani
+      orcid: "https://orcid.org/0009-0000-6003-8826"
+      affiliation: "Independent Applied AI Research"
+      email: "hello@keyvan.ai"
+  year: 2026
+  month: 4
+  institution:
+    name: "Independent"
+  url: "https://github.com/Keyvanhardani/mythos-research"

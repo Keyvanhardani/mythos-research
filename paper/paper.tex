@@ -1,0 +1,394 @@
+% Mythos Research Edition — research report
+% Build:  make           (pdflatex + bibtex)
+% or:     latexmk -pdf paper.tex
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{charter}            % Bitstream Charter body font (matches the PDF)
+\usepackage[scaled=0.92]{helvet}% sans-serif for headings
+\usepackage{courier}
+
+\usepackage[a4paper,top=3cm,left=3cm,right=2cm,bottom=2.5cm]{geometry}
+\usepackage[english]{babel}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{titling}
+\usepackage{listings}
+\usepackage{setspace}
+\usepackage[numbers,square,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black,pdfborder={0 0 0}]{hyperref}
+\usepackage{orcidlink}
+
+% ---- heading styles (DejaVu Sans / Helvetica substitute) ------------------
+\titleformat{\section}
+  {\normalfont\sffamily\bfseries\large}{\thesection}{0.7em}{}
+  [\vspace{-0.3ex}\titlerule]
+\titleformat{\subsection}
+  {\normalfont\sffamily\bfseries\normalsize}{\thesubsection}{0.7em}{}
+\titleformat{\subsubsection}
+  {\normalfont\sffamily\bfseries\small}{\thesubsubsection}{0.6em}{}
+
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+\titlespacing*{\subsubsection}{0pt}{8pt}{2pt}
+
+% ---- headers / footers ----------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Outside-In Replication of Project Glasswing}
+\fancyfoot[R]{\small\sffamily\bfseries\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[R]{\small\sffamily\bfseries\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 1pt}
+
+% listings (code blocks)
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=leftline,
+  framesep=6pt,
+  xleftmargin=10pt,
+  backgroundcolor=\color{gray!8},
+  rulecolor=\color{gray!50},
+}
+
+% ---- meta -----------------------------------------------------------------
+\title{\vspace{-1cm}
+  \begin{flushleft}
+  {\sffamily\footnotesize\textbf{RESEARCH REPORT \ \textperiodcentered\ APRIL 2026}}\\[-1pt]
+  \rule{\textwidth}{0.4pt}\\[10pt]
+  {\sffamily\Large\bfseries An Outside-In Replication of Project Glasswing}\\[6pt]
+  {\itshape\normalsize Mythos Research Edition -- a sink-guided, agentic pipeline for defensive
+  vulnerability discovery with a general-purpose frontier model}
+  \end{flushleft}
+  \vspace{-0.4em}}
+
+\author{%
+  Keyvan Hardani\,\orcidlink{0009-0000-6003-8826}\thanks{%
+    Independent Applied AI Research.
+    Contact: \href{mailto:hello@keyvan.ai}{hello@keyvan.ai}.
+    ORCID \href{https://orcid.org/0009-0000-6003-8826}{0009-0000-6003-8826}.
+    Source repository: \href{https://github.com/Keyvanhardani/mythos-research}{github.com/Keyvanhardani/mythos-research}.}
+}
+
+\date{April 2026 \\ \small Version 1.0 (Research Edition v3.1-preview)}
+
+% ---------------------------------------------------------------------------
+\begin{document}
+\maketitle
+\thispagestyle{plain}
+
+\begin{abstract}
+\noindent
+Anthropic's April 2026 \emph{Mythos Preview} announcement (Project Glasswing)
+reports substantial gains in autonomous vulnerability discovery from a
+specialised model checkpoint paired with a comparatively simple agentic
+scaffold \citep{anthropicMythos2026}. This report examines the
+\emph{scaffold} contribution in isolation and documents an outside-in
+replication built around a general-purpose frontier model
+(Claude~Opus~4.7, \citealt{anthropicOpus2026}). A seven-phase, sink-guided
+pipeline---language detection, sink slicing, file ranking, agentic hunting,
+skeptical validation, live-execution (held out of the public repository), and
+aggregation---is described together with the vulnerability-semantics prompts
+that drive it. The report separates what structured prompting and
+scaffolding can plausibly close from what remains weight-level capability,
+draws on the public literature on agentic security agents
+\citep{projectzeroNaptime2024,projectzeroBigSleep2024,hptsa2024,vsp2024,vulnSage2025},
+and gives an indicative per-run cost profile for the targeted-scan
+configuration. \textbf{No benchmark comparison against Project Glasswing
+itself is claimed}; all quantitative statements about Glasswing performance
+are reproduced from the primary sources cited inline.
+
+\vspace{0.6em}
+\noindent\textbf{Keywords --- }%
+large language models; vulnerability discovery; agentic scaffolding;
+prompt engineering; sink analysis; coordinated disclosure; Claude; Glasswing.
+
+\vspace{0.6em}
+\noindent\textbf{Scope \& honesty statement. }%
+This report is an \emph{outside-in} replication of the publicly described
+scaffold. It does not attempt to reproduce the Mythos Preview checkpoint,
+and the live-exploit validation stage is deliberately held out of the public
+repository in line with coordinated-disclosure practice. All Glasswing
+figures reproduced in this report are attributed to their primary sources
+and are not independently measured here.
+\end{abstract}
+
+\vspace{-0.2em}
+
+\tableofcontents
+\vspace{1em}
+
+% ===========================================================================
+\section{What Mythos Actually Does}
+
+Anthropic's Mythos Preview paper \citep{anthropicMythos2026} describes a
+remarkably simple scaffold paired with a fundamentally stronger reasoning
+model:
+
+\begin{itemize}[leftmargin=14pt]
+  \item an \emph{isolated container} is launched with the target project's source code;
+  \item Claude is prompted with: \textit{``Please find a security vulnerability
+  in this program.''};
+  \item the model \emph{autonomously} reads code, hypothesises vulnerabilities,
+  runs the project under debuggers and custom debug logic, and outputs a bug
+  report with proof-of-concept exploit;
+  \item files are ranked 1--5 for vulnerability likelihood
+  (1 = constants, 5 = internet-facing parsers);
+  \item a \emph{secondary validation agent} re-reviews each finding with
+  \textit{``Can you please confirm if it's real and interesting?''};
+  \item human contractors validated 198 reports with a reported
+  89\,\% exact severity match and 98\,\% within one level
+  \citep{anthropicMythos2026}.
+\end{itemize}
+
+\subsection{The actual prompts}
+\begin{lstlisting}
+Discovery:     "Please find a security vulnerability in this program."
+Exploit-Dev:   "In order to help us appropriately triage any bugs you find,
+                please write exploits so we can submit the highest severity ones."
+Reverse-Eng:   "Please find vulnerabilities in this closed-source project.
+                I've provided best-effort reconstructed source code, but validate
+                against the original binary where appropriate."
+Validation:    "I have received the following bug report. Can you please
+                confirm if it's real and interesting?"
+\end{lstlisting}
+
+The prompts are trivially simple; the announced breakthrough is in model
+capability, not in the prompt.
+
+\subsection{Notable findings reported}
+Public notable findings attributed to the Glasswing campaign include
+an OpenBSD TCP SACK signed-integer overflow, an FFmpeg H.264 slice-counter
+mismatch, a VM guest-to-host escape via unsafe pointer operations, and
+the FreeBSD NFS RCE disclosed as CVE-2026-4747 (full autonomous
+exploitation chain at a reported per-run cost below \$50)
+\citep{anthropicMythos2026,nvd20264747,vulncheckGlasswing2026}.
+
+% ===========================================================================
+\section{The Benchmark Gap}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lrrX@{}}
+\toprule
+\textbf{Model} & \textbf{Working exploits} & \textbf{Register-control} & \textbf{From attempts} \\
+\midrule
+Opus~4.6         & 2   & ---  & Several hundred \\
+Mythos Preview   & 181 & +29  & Similar scale \\
+\bottomrule
+\end{tabularx}
+\caption{Firefox 147 JavaScript engine, as reported by \citet{anthropicMythos2026}.
+Factor $\approx 90\times$.}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+\textbf{Tier} & \textbf{Opus~4.6} & \textbf{Mythos Preview} \\
+\midrule
+Tier 1--2 (crashes)            & $\sim$250--275 & 595 \\
+Tier 3 (controlled crash)      & 1              & Handful \\
+Tier 4 (partial control)       & 0              & Multiple \\
+Tier 5 (full control-flow hijack) & 0           & 10 \\
+\bottomrule
+\end{tabularx}
+\caption{OSS-Fuzz corpus (7\,000 entry points), reproduced from
+\citet{anthropicMythos2026}.}
+\end{table}
+
+Cost data reported in the primary source: OpenBSD full scan below
+\$20\,000 for 1\,000 scaffold runs; individual high-severity discovery
+below \$50 per successful run; the FreeBSD NFS full exploit below
+\$1\,000 in half a day; total exploration cost for CVE-2026-4747 below
+\$2\,000 \citep{anthropicMythos2026}.
+
+% ===========================================================================
+\section{Why the gap exists}
+
+The per-reasoning-step accuracy reported for Mythos (83.1\,\%) and Opus~4.6
+(66.6\,\%) compounds geometrically over the length of a reasoning chain.
+At a 20-step real exploit, this implies $2.4\,\%$ vs.\ $0.03\,\%$ success
+rate, an $\approx 80\times$ gap that no prompt can change because per-step
+accuracy is a weight-level quantity
+\citep{mindstudioMythos2026,semgrepNeedles2026}.
+
+Finding a crash (tier 1--2) and weaponising it (tier 5) are qualitatively
+different: the latter requires coherent state across many dependent
+reasoning steps (heap layout, ASLR bypass, gadget selection, chain
+correctness). Opus-class general-purpose models fall off a cliff at
+tier 3 and above.
+
+% ===========================================================================
+\section{What scaffolding can close}
+
+The tier 1--2 crash-finding gap is quantitative, not qualitative: Opus
+can find crashes, it just needs better file prioritisation, more attempts
+(pass@$k$), focused prompting, and tool augmentation. Evidence from
+ZeroDayBench shows a move from 12.8\,\% at zero-day level to 95.7\,\% at
+full-information level, underlining that context is decisive for crash
+finding \citep{ndss2025}. Severity assessment is already close to
+Mythos-level; the Think-\&-Verify pattern improves accuracy from
+36.7\,\% to 57.94\,\% \citep{vulnSage2025}. Vulnerability identification
+in well-known patterns benefits from vulnerability-semantics-guided
+prompting (VSP), which reports a 553\,\% F1 improvement
+\citep{vsp2024}.
+
+% ===========================================================================
+\section{What scaffolding cannot close}
+
+Multi-step exploit development (tier 3--5) requires the model to hold
+the entire exploit state in coherent reasoning across dozens of
+dependent steps. ROP-chain construction, JIT heap spray under ASLR+DEP,
+sandbox escapes requiring kernel write primitives from user space, and
+cross-cache slab reclamation are all weight-level capabilities. The
+Anthropic announcement is itself explicit that Glasswing's cyber strength
+emerged as a downstream consequence of general improvements in code,
+reasoning, and autonomy \citep{anthropicGlasswing2026}. No prompt trick
+changes that conclusion.
+
+% ===========================================================================
+\section{Prompting techniques that help}
+
+\paragraph{Vulnerability-Semantics-Guided Prompting (VSP).}
+Rather than asking ``find bugs'', VSP guides the model through an explicit
+data-flow walk from external inputs to consumption points, checking bounds,
+integer-width, sanitisation, and index-control at each sink. The same
+paper reports that unfocused chain-of-thought \emph{reduces} F1 because
+irrelevant vulnerability types dilute the reasoning trace
+\citep{vsp2024}.
+
+\paragraph{Think \& Verify.}
+A two-pass structure---analysis under \texttt{<thinking>}, followed by
+re-examination of each claimed finding for false positives and a final
+verdict---adds $+21$~points accuracy and halves ambiguous responses
+\citep{vulnSage2025}.
+
+\paragraph{Goal reframing.}
+Framing the task as a CTF challenge or a puzzle containing ``hidden flaws
+no one has found yet'' materially increases exploitation reasoning
+compared to neutral framings \citep{taxonomy2026}.
+
+\paragraph{Static-analysis annotation.}
+Annotating code with the output of a classical analyser before prompting
+(e.g.\ \texttt{// STATIC\_ANALYSIS: size parameter from user input at line 23})
+gives the LLM exactly the information a domain expert would use
+\citep{semgrepNeedles2026}.
+
+% ===========================================================================
+\section{Agentic scaffolds}
+
+\subsection{Project Naptime / Big Sleep}
+Google Project Zero's Naptime \citep{projectzeroNaptime2024}, extended as
+Big Sleep \citep{projectzeroBigSleep2024}, couples a Claude-class model
+with a code browser, a Python sandbox, and a debugger with
+AddressSanitizer, plus a structured reporter. Reported 20$\times$ improvement
+over CyberSecEval2 baseline. The design principle---``the LLM orchestrates
+deterministic tools that provide ground-truth feedback''---drives false
+positives close to zero.
+
+\subsection{Mythos Research Edition (this work)}
+The replicated scaffold uses seven phases:
+Language detection (0), sink-guided slicing (1), file ranking (2), agentic
+hunting (3), skeptical validation (4), live-execution (5, held private),
+and aggregation (6). Ranking is driven by language-specific sink
+catalogues (deserialisation, code-eval, SQL injection, prototype pollution,
+XXE, framework footguns, sanitiser gaps). Hunters are parallelised per
+ranked file with a VSP prompt and a diversity focus hint; the validator
+is explicitly framed as a sceptical reviewer that can downgrade findings.
+Targeted scans (${\leq}8$ files, \$3 budget per hunter) on
+\texttt{claude-opus-4-7} land at \$0.30--\$1.50 per run, roughly two
+orders of magnitude below Anthropic's \$20--\$50/run range for Glasswing
+runs on \texttt{claude-mythos-preview}.
+
+\subsection{APPATCH and LLMxCPG}
+Semantics-aware scoping \citep{appatch2025} narrows analysis to
+the relevant code subset; LLMxCPG uses the LLM to generate Code-Property-Graph
+queries to extract minimal relevant slices
+\citep{llmxcpg2025}, achieving 67--91\,\% code-size reduction with
+15--40\,\% F1 improvement.
+
+% ===========================================================================
+\section{Multi-agent patterns}
+
+HPTSA couples a planning agent with task-specific subagents and reports a
+$4.3\times$ improvement over a single-agent baseline, reaching a 53\,\% success
+rate at $k=5$ on real zero-days \citep{hptsa2024}. CVE-Genie combines a
+developer--critic pair inside a ReAct loop across processor, builder,
+exploiter, and CTF-verifier stages, reaching 51\,\% on 2024--2025 CVEs at
+\$2.77 average cost \citep{cvegenie2025}.
+
+% ===========================================================================
+\section{Practical recommendations}
+
+\begin{enumerate}[leftmargin=14pt]
+  \item Give the agent deterministic tools (debugger, ASan, code browser)
+  before giving it more context; Naptime's 20$\times$ gap over the baseline
+  \citep{projectzeroNaptime2024} is the largest intervention reported in
+  the public literature.
+  \item Prefer VSP-style prompts to generic ``find bugs''.
+  \item Combine with traditional tools; DARPA AIxCC winners used LLMs to
+  augment fuzzing and static analysis rather than replace them.
+  \item Sample pass@$k{=}20$--50 independent attempts per target at
+  \$0.05--\$0.50/run.
+  \item Always add a sceptical secondary validator.
+  \item Rank files before hunting; do not waste runs on constants.
+  \item Use Think \& Verify to suppress false positives.
+  \item Accept the exploit-writing ceiling: use Opus-class models for
+  discovery and triage; do exploit development manually until the next
+  model generation.
+\end{enumerate}
+
+% ===========================================================================
+\section{Limitations of this report}
+
+\begin{itemize}[leftmargin=14pt]
+  \item No primary benchmark evaluation of Mythos Research Edition is
+  presented here; per-run cost figures are indicative, not measured across
+  a controlled comparison against Glasswing. A follow-up report with
+  benchmark comparisons against OWASP Benchmark, Juliet CWE, and a
+  curated CVE regression set is planned.
+  \item Sink catalogues are hand-maintained and regex-based; semantic
+  bugs outside the catalogue are systematically missed.
+  \item The ranker currently skips files larger than 2\,500 LOC, which is
+  a meaningful gap for large parser files.
+  \item No Docker isolation yet; running against untrusted codebases
+  locally is at the operator's own risk.
+\end{itemize}
+
+% ===========================================================================
+\section{Availability}
+
+The scaffold, prompts, sink catalogues and orchestrator referenced
+throughout this report are published under the Apache~License~2.0 at
+\url{https://github.com/Keyvanhardani/mythos-research}. The
+live-exploit-validation stage (Phase~5), exploit-sketch generators and
+per-target tuning accumulated during real scans are kept outside the
+public repository in line with coordinated-disclosure practice.
+
+% ===========================================================================
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

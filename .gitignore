@@ -24,6 +24,19 @@ slices/
 __pycache__/
 *.pyc
 
+# LaTeX build artefacts (keep paper.tex and references.bib; drop the rest)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.lof
+paper/*.lot
+paper/*.fls
+paper/*.fdb_latexmk
+paper/paper.pdf
+
 # Never commit the weapon-stage even if someone drops it here
 scripts/exec-validator.sh
 scripts/mythos-exploit.sh
