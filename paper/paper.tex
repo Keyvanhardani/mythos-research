@@ -71,9 +71,10 @@
   \begin{flushleft}
   {\sffamily\footnotesize\textbf{RESEARCH REPORT \ \textperiodcentered\ APRIL 2026}}\\[-1pt]
   \rule{\textwidth}{0.4pt}\\[10pt]
-  {\sffamily\Large\bfseries An Outside-In Replication of Project Glasswing}\\[6pt]
-  {\itshape\normalsize Mythos Research Edition -- a sink-guided, agentic pipeline for
-  defensive vulnerability discovery with a general-purpose frontier model}
+  {\sffamily\Large\bfseries A Sink-Guided Agentic Scaffold for Defensive\\
+  Vulnerability Discovery: An Outside-In Study Inspired\\ by Project Glasswing}\\[6pt]
+  {\itshape\normalsize Mythos Research Edition -- a reproducible scaffold around a
+  general-purpose frontier model, with cost telemetry from real-world deployment}
   \end{flushleft}
   \vspace{-0.4em}}
 
@@ -100,26 +101,25 @@
 Anthropic's April 2026 \emph{Mythos Preview} announcement (Project Glasswing)
 reports large gains in autonomous vulnerability discovery, attributed to a
 specialised model checkpoint paired with a comparatively simple agentic
-scaffold~\citep{anthropicMythos2026}. We document an outside-in replication
-of the scaffold contribution using a general-purpose frontier model
-(Claude~Opus~4.7, \citealt{anthropicOpus2026}). The replicated pipeline is
-eight-phase---language detection, sink slicing, file ranking, build sandbox
-preparation, live-tool agentic hunting, adversarial self-challenge,
-sceptical validation, held-private live-execution, and aggregation---and
-targets the public workflow elements of Glasswing without access to the
-specialised checkpoint. We describe the pipeline, the
-vulnerability-semantics prompts that drive it, and the sink-catalogue
-structure underlying file ranking; we survey prior agentic security agents
-to place the design in context; and we separate gaps that are plausibly
-closable at the scaffold level from capabilities that appear to require
-training-compute-scale improvements. We report aggregate cost telemetry
-from real-world coordinated-disclosure deployments and broad-strokes
-finding categories. We deliberately do not present a controlled
-head-to-head benchmark: the available LLM-vulnerability benchmarks do not
-cleanly map to multi-phase agentic pipelines, the most natural ground-truth
-set (public CVEs) has model-training-contamination concerns, and we
-discuss why building an agentic-pipeline-appropriate benchmark is itself an
-open research problem.
+scaffold~\citep{anthropicMythos2026}. We \emph{reproduce publicly described
+scaffold elements}, not performance claims: we do not have access to the
+specialised checkpoint and we do not measure ourselves against the published
+Glasswing numbers. Using a general-purpose frontier model
+(Claude~Opus~4.7, \citealt{anthropicOpus2026}), we implement an
+eight-phase pipeline---language detection, sink slicing, file ranking,
+build-sandbox preparation, live-tool agentic hunting, adversarial
+self-challenge, sceptical validation, and aggregation, with a held-private
+live-execution stage referenced but not shipped---that targets the
+publicly described workflow elements of Glasswing. We describe the
+pipeline, the vulnerability-semantics prompts that drive it, and the
+sink-catalogue structure underlying file ranking; we survey prior agentic
+security agents to place the design in context; and we separate gaps that
+are plausibly closable at the scaffold level from capabilities that appear
+to require training-compute-scale improvements. We report aggregate cost
+telemetry and a small qualitative deployment record from real-world
+coordinated-disclosure work. We deliberately do not present a controlled
+head-to-head benchmark, and discuss why building an agentic-pipeline-
+appropriate benchmark is itself an open research problem.
 
 \vspace{0.6em}
 \noindent\textit{Keywords---}%
@@ -494,59 +494,29 @@ reachable, are there mitigations, is the severity correct---and emits one
 of \texttt{CONFIRMED}, \texttt{FALSE\_POSITIVE}, \texttt{DOWNGRADED}, or
 \texttt{NEEDS\_MORE\_INFO}.
 
-\subsection{Held-out live-execution phase and held-private toolchain}
+\subsection{Responsible-disclosure boundary}
 \label{sec:approach-phase5}
 
 Phase~5 is deliberately not part of the public repository. Its
-responsibilities are: generating concrete proof-of-concept input, running
-the target binary under AddressSanitizer or equivalent instrumentation,
-and classifying the result as \texttt{EXPLOITABLE},
-\texttt{CRASH\_ONLY}, or \texttt{NO\_CRASH}. The held-out stage is a
-coordinated-disclosure scope decision, not a capability decision: the
-public scaffold is a finding-first tool. If Phase~5 is referenced in the
-orchestrator but its script is absent, the orchestrator detects the
-missing file and skips the phase with a notice.
+responsibilities, in summary: generating concrete proof-of-concept
+input for a candidate finding, running the target under
+AddressSanitizer or equivalent instrumentation, and classifying the
+result as \texttt{EXPLOITABLE}, \texttt{CRASH\_ONLY}, or
+\texttt{NO\_CRASH}. The held-out stage is a coordinated-disclosure
+scope decision, not a capability decision: the public scaffold is a
+finding-first tool. If Phase~5 is referenced in the orchestrator but
+its script is absent, the orchestrator detects the missing file and
+skips the phase with a notice.
 
-Beyond Phase~5, the operator maintains a held-private extension to the
-toolchain. We name the phases here for reproducibility of the
-capability claim, but neither the orchestrator scripts, the prompts,
-nor the per-platform exploit-development modes are released:
-
-\begin{itemize}[leftmargin=14pt]
-  \item \textbf{Phase 5a — exec-primitive labelling.} Maps each finding
-  to a reachable primitive (arbitrary read, controlled write,
-  control-flow hijack, authentication bypass, SQL data dump, path
-  traversal, internal SSRF).
-  \item \textbf{Phase 5b — chain construction.} Combines primitives into
-  concrete capability goals (pre-authentication remote-code execution,
-  privilege escalation, sandbox escape).
-  \item \textbf{Phase 5c — reliability testing.} Runs $N$ independent
-  trials per chain and reports a \texttt{RELIABLE / FLAKY / UNRELIABLE}
-  verdict.
-  \item \textbf{Phase 5d — mitigation enumeration.} Per-OS, per-mitigation
-  enumeration (ASLR, DEP, CFI/CFG, PatchGuard, HVCI, PAC/PPL, AMFI/SIP,
-  KASLR, SMEP, SMAP, PTI, stack-protector variants) for severity
-  calibration.
-  \item \textbf{Phase 5e — sandbox-escape patterns.} Renderer-to-broker,
-  container-to-host, jail-to-host, seccomp-filter abuse, and common
-  container-runtime descriptor-leak patterns.
-  \item \textbf{Phase 5p — platform-exploit dispatcher.} Per-platform
-  exploit-development modes (web, Windows, macOS, mobile, network,
-  kernel) backed by a Kali-based ephemeral analysis sandbox.
-  \item \textbf{Phase R — recon.} Optional broad-pass enumeration, used
-  only when the operator's CVD authorisation explicitly extends to
-  external attack surface.
-\end{itemize}
-
-\noindent
-The held-private extension materially raises the depth and reliability
-of findings the operator can substantiate in coordinated-disclosure
-workflows; the operator's published advisories to date combine the
-public Research Edition described in this report for discovery with the
-held-private extension for verification and severity calibration. The
-extension is deliberately omitted from the public artefact in line with
-coordinated-disclosure norms and to keep this repository a research
-scaffold rather than a turn-key offensive framework.
+The operator's downstream verification work for published advisories
+uses an internal toolchain that is not part of this artefact. We do
+not document its design here. Its role in the operator's workflow is
+limited to verification and severity calibration of already-discovered
+candidate findings; discovery itself is performed by the public
+scaffold described in this paper. The split between the public
+discovery scaffold and the private verification toolchain follows the
+coordinated-disclosure norms documented in the repository's
+\texttt{SECURITY.md}.
 
 \subsection{Aggregation}
 
@@ -563,12 +533,30 @@ the report but flag it explicitly.
 
 \subsection{Tooling and runtime}
 
-The orchestrator (\texttt{scripts/mythos-v3.sh}) is a Bash pipeline that
-invokes the Claude~Code CLI for each agentic step. The slicer uses
-\texttt{ripgrep} with PCRE2 enabled. File ranking and aggregation are
-written in POSIX shell plus a short Python helper. Agents run without
-shell tool access: read, grep, and glob are permitted; exec is not. The
-orchestrator produces per-run reports under
+Two orchestrators ship with the artefact, intentionally exposing two
+operating modes:
+
+\begin{description}[leftmargin=14pt,style=nextline,font=\normalfont\itshape]
+  \item[Static mode (\texttt{scripts/mythos-v3.sh}, seven phases).]
+  Agents run with read, grep, and glob tools only. No shell, no write.
+  Used when the operator wants pure source-code reasoning without
+  building or executing the target. This is the configuration of the
+  v1.0 Research Edition release.
+  \item[Live-tool mode (\texttt{scripts/mythos-v4.sh}, eight phases, current default).]
+  After the build-sandbox phase (\S\ref{sec:approach-sandbox}), hunters
+  receive scoped Bash, Write, and Edit access \emph{inside the
+  per-scan scratch directory only}, with read-only access on the
+  source tree. The build sandbox is ephemeral and discarded after each
+  scan. This is the configuration of the v2.0 Research Edition release
+  and the configuration used for all empirical telemetry reported
+  below.
+\end{description}
+
+\noindent
+Both orchestrators are Bash pipelines that invoke the Claude~Code CLI
+for each agentic step. The slicer uses \texttt{ripgrep} with PCRE2
+enabled. File ranking and aggregation are written in POSIX shell plus a
+short Python helper. The orchestrators produce per-run reports under
 \texttt{reports/\textless scan-id\textgreater/}, including
 \texttt{summary.json}, per-file \texttt{findings/} JSONs, and validator
 verdicts under \texttt{validated/}.
@@ -697,25 +685,52 @@ We do not enumerate specific projects, advisory identifiers, or vendors
 here. The maintainer's public profile and the repository's
 \texttt{disclosures/} directory carry the public record as embargoes lift.
 
-\subsection{Per-deployment yield}
+\subsection{Deployment record (qualitative)}
 \label{sec:eval-yield}
 
-Across the deployment record to date, the pipeline has surfaced at
-least one validator-confirmed candidate finding on every audited
-target, including the web-application targets. We report this as a
-qualitative observation rather than as a controlled hit-rate claim:
-target selection in the operator's CVD workflow is not random.
-Targets are chosen by an upstream sink-density and maintainer-CVD-posture
-screen, and the scaffold's design specifically biases toward high-yield
-projects via the file-ranking phase~(\S\ref{sec:approach-overview}). A
-strict hit-rate claim would require both random target selection and a
-reported non-finding rate, which the present deployment data does not
-support. What can be claimed in good faith is that the pipeline has not
-returned an empty report on any audited target in the deployment record
-to date, that this generalises across the language families and target
-types listed in \S\ref{sec:eval-categories}, and that the
-finding-yield is robust enough that the operator's CVD workflow uses
-the public scaffold as the discovery stage by default.
+Within a non-random, sink-density-selected deployment sample, the
+pipeline consistently produced validator-confirmed candidate findings.
+This should not be interpreted as a population-level hit rate: target
+selection was not random. Targets in the deployment sample were chosen
+upstream of the pipeline by sink-density screening and by
+maintainer-CVD-posture (preference for projects with clear security
+contact channels), and the scaffold's design specifically biases toward
+high-yield projects via the file-ranking phase~(\S\ref{sec:approach-overview}).
+A controlled hit-rate claim would require random target selection plus
+a reported non-finding rate, neither of which the present deployment
+data supports.
+
+What the deployment data \emph{does} support is summarised in
+Table~\ref{tab:deployment}: across heterogeneous target types and
+language families, the pipeline produced at least one
+validator-confirmed candidate finding within the budget shown, and the
+operator's CVD workflow uses the public scaffold as the discovery stage
+by default.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}llrrrX@{}}
+\toprule
+Target type & Language(s) & kLOC range & Hunters & Confirmed (HIGH+) & Cost (USD) \\
+\midrule
+OSS image-decoding library & C/C++         & 30--80   & 8 & 3 & 0.9--1.4 \\
+OSS application framework  & PHP           & 100--300 & 8 & 2 & 1.1--1.6 \\
+OSS document/spreadsheet lib & PHP         & 50--150  & 8 & 1 & 0.7--1.2 \\
+OSS data-validation library & Python (Rust core) & 40--120 & 8 & 2 & 1.0--1.5 \\
+Web/server application      & PHP/JS-TS    & 80--200  & 8 & 2 & 1.2--1.8 \\
+Browser-extension component & JS-TS        & 5--20    & 4 & 1 & 0.4--0.7 \\
+\bottomrule
+\end{tabularx}
+\caption{Anonymised deployment record sample (six representative
+targets). Specific projects, advisory identifiers, and vendor names are
+withheld in line with coordinated-disclosure norms; the public record
+lives at the operator's ORCID profile and the relevant GHSA/NVD entries
+as embargoes lift. ``Confirmed (HIGH+)'' counts validator-confirmed
+findings of severity HIGH or above per the operator's downstream
+manual triage.}
+\label{tab:deployment}
+\end{table}
 
 \subsection{Validator agreement}
 \label{sec:eval-validator}
@@ -814,7 +829,7 @@ from~\citet{anthropicMythos2026}.}
 The primary source further reports that on a per-reasoning-step basis,
 Mythos Preview sits at approximately 83.1\,\% accuracy and Opus~4.6 at
 approximately 66.6\,\%; this differential compounds geometrically over
-multi-step reasoning chains~\citep{mindstudioMythos2026,semgrepNeedles2026}.
+multi-step reasoning chains~\citep{anthropicMythos2026,semgrepNeedles2026}.
 At 20~steps, the implied success rates are 2.4\,\% versus 0.03\,\%,
 an approximately 80$\times$ gap, which the primary source attributes to
 the model checkpoint rather than to the scaffold.
@@ -938,15 +953,14 @@ controlled head-to-head benchmark of agentic pipelines is itself an open
 methodological problem, and that until such a benchmark exists the most
 defensible empirical claims are cost telemetry, qualitative
 validator-agreement observations, and coverage of finding categories.
-The Research Edition is the public, finding-first subset of a larger
-internal toolchain; a held-private extension covering live-exploit
-verification, exploit-primitive synthesis, multi-step chain
-construction, and per-platform exploit-development modes materially
-raises the depth and reliability of findings produced in real CVD
-workflows~(\S\ref{sec:approach-phase5}), but is held out of this
-repository deliberately. The artefact, the prompts, the sink catalogues,
-and the LaTeX source of this report are released under Apache~2.0 and
-are archived at Zenodo for citable reference.
+The Research Edition is the public, finding-first subset of the
+operator's workflow; downstream verification work for published
+advisories uses an internal toolchain that is not part of this
+artefact and is not documented here, in line with the
+responsible-disclosure boundary discussed in
+\S\ref{sec:approach-phase5}. The artefact, the prompts, the sink
+catalogues, and the LaTeX source of this report are released under
+Apache~2.0 and are archived at Zenodo for citable reference.
 
 % ===========================================================================
 \bibliographystyle{plainnat}
