@@ -22,20 +22,100 @@
 
 ---
 
-## What this is
+## What is Mythos Preview?
 
-**Mythos Research Edition** is a reproducible scaffold for running an *agentic* security review over an
-open-source codebase, using a general-purpose frontier LLM via [Claude Code CLI](https://github.com/anthropics/claude-code).
-It is the community-facing subset of a larger internal toolchain; the live-exploit-verification stage is
-deliberately held out of this repository — see [Scope](#scope).
+In April 2026 Anthropic released [`claude-mythos-preview`](https://red.anthropic.com/2026/mythos-preview/),
+a model checkpoint trained for autonomous cybersecurity work — vulnerability discovery,
+patch generation, black-box binary analysis, and long-running offensive-security agents.
+The companion programme, [Project Glasswing](https://www.anthropic.com/glasswing), pairs the
+model with critical-software maintainers to find and disclose vulnerabilities before the same
+capabilities reach attackers. Anthropic's published Glasswing figures place per-run cost in
+the **$20 – $50** range and report meaningful gains on OpenBSD and CyberGym benchmarks
+relative to general-purpose baselines.
 
-Mythos was built as a **replication experiment** against Anthropic's
-[claude-mythos-preview](https://red.anthropic.com/2026/mythos-preview/) announcement (2026-04-20):
-*can a local scaffold with a general-purpose frontier model, without the special model checkpoint Anthropic
-tested on OpenBSD and CyberGym, reproduce a meaningful fraction of their vulnerability-discovery workflow?*
+Mythos Preview is **invitation-only**. Access is allow-listed to roughly forty organisations
+that build or maintain critical software, distributed via existing Anthropic / AWS Bedrock /
+Google Vertex AI relationships. Anthropic does not currently plan a general release. The
+model itself is paired with a comparatively simple agentic *scaffold* — language detection,
+sink slicing, file ranking, an autonomous hunter, a sceptical validator, and (in the live
+setting) an exploit-verification stage.
 
-The answer, summarised: **yes, for targeted scans and at roughly ~50× lower cost per run**, with the important
-caveat that the heaviest exploit-development tasks still favour Anthropic's internal preview model.
+## What Mythos Research Edition is
+
+This repository is an **outside-in replication of the scaffold half** of that programme.
+The specialised model checkpoint is not available to us, so the discovery pipeline runs on
+[`claude-opus-4-7`](https://github.com/anthropics/claude-code) — Anthropic's strongest
+publicly available general-purpose model — via
+[Claude Code CLI](https://github.com/anthropics/claude-code).
+
+The replication asks one specific question:
+
+> *Without the specialised checkpoint, can a faithful reproduction of the published scaffold,
+> running on a general-purpose frontier model, recover a meaningful fraction of the
+> vulnerability-discovery workflow described in the Mythos paper?*
+
+The empirical answer, summarised: **yes for the discovery half, partially for live-exploit
+development, and at roughly 25–50× lower cost per run**. The heaviest exploit-development
+tasks — heap-shaping, CTF-grade chains, binary-only analysis — still favour the specialised
+checkpoint. The discovery, ranking, sceptical-validation, and triage phases do not.
+
+## Honest about what this is *not*
+
+A few things, plainly:
+
+- **Not a novel methodology.** Sink-guided slicing dates back to Semgrep / CodeQL / cppcheck /
+  Coverity. The agentic-hunter pattern is contemporaneous work by many groups and is, at its
+  core, the same pattern Anthropic describes in the Mythos paper. What this repository
+  contributes is one openly runnable, end-to-end implementation of the pattern, pinned to a
+  specific public frontier-model release that anyone can clone and reproduce.
+- **Not the same model.** Mythos Preview's strongest published results depend on the
+  specialised checkpoint. A general-purpose model is meaningfully weaker at the heavier end
+  of exploit development; it is *not* meaningfully weaker at the discovery and triage end.
+- **Not a turn-key exploitation framework.** The Phase 5 live-exec validator and the
+  per-run PoC generators are held out of the public repository in line with
+  coordinated-disclosure norms. The hook is public; the implementation is not.
+- **Not an enterprise vulnerability-management platform.** Mythos is per-project,
+  command-line, single-tenant. There is no scheduler, no fleet manager, no multi-tenant
+  dashboard, no automated remediation, no MSP/MSSP integration.
+
+## Mythos Preview vs Mythos Research Edition
+
+|  | **Anthropic Mythos Preview** | **This: Mythos Research Edition** |
+|---|---|---|
+| Model | `claude-mythos-preview` (specialised checkpoint) | `claude-opus-4-7` (general-purpose) |
+| Access | Invitation-only allow-list (~40 orgs) | Public, Apache 2.0 |
+| Scaffold | Internal | Open-source (this repo) |
+| Live exploit-development | Full pipeline | Phase-5 hook public, validator held private |
+| Default scan scope | 1000-file projects (per published Glasswing runs) | Targeted (≤ 10 files default; configurable) |
+| Per-run cost | $20 – $50 (per published Glasswing figures) | $0.30 – $1.50 |
+| Best for | Allow-listed critical-infrastructure CVD | OSS self-audit, academic replication, individual researchers |
+| Status (May 2026) | Held private; no application form | Available now, Apache-2.0, anyone with a Claude API key can run it |
+
+## What it is good for
+
+- **OSS maintainers self-scanning before release.** A repo-scoped scan with
+  `--max-files 8 --pass-at-k 3` typically finishes for under $2 and surfaces 1–3 real
+  candidate findings on a small-to-mid-sized library.
+- **Academic replication of the Mythos scaffold.** The phases are documented, the prompts
+  are versioned, the pipeline is deterministic up to model temperature, and a
+  publication-ready PDF + LaTeX source ship in `dist/` and `paper/`. Compute is cheap
+  enough to repeat at the dissertation-section level.
+- **Coordinated-disclosure work** by individual researchers who cannot get on the Glasswing
+  allow-list. The Research Edition has been used in published CVD work resulting in
+  multiple CVEs and GitHub Security Advisories across OSS projects (see the author's
+  [ORCID profile](https://orcid.org/0009-0000-6003-8826) and the
+  [Wordfence Threat Intel researcher page](https://www.wordfence.com/threat-intel/vulnerabilities/researchers/keyvan-hardani)).
+
+## What it is *not* good for
+
+- **Heavy exploit-development work** against compiled binaries with modern mitigations.
+  The general-purpose model gets *to* the bug; turning a primitive into a reliable
+  weaponised chain is where the specialised checkpoint pulls away.
+- **Mass scanning / managed-service workflows.** Mythos is per-project, terminal-driven.
+  If you need an MSP-grade platform with multi-tenant dashboards and automated patching,
+  this is the wrong repository.
+- **Black-box or binary-only targets.** The pipeline assumes source-code access. Stripped
+  binaries are out of scope.
 
 ## Pipeline
 
