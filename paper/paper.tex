@@ -41,7 +41,7 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\itshape An Outside-In Replication of Project Glasswing}
+\fancyhead[L]{\small\itshape A Sink-Guided Agentic Scaffold for Defensive Vulnerability Discovery}
 \fancyfoot[R]{\small\sffamily\bfseries\thepage}
 \renewcommand{\headrulewidth}{0pt}
 
@@ -89,7 +89,7 @@
     (version DOI for v1.0.2: 10.5281/zenodo.19727858).}
 }
 
-\date{April 2026 \\ \small Version 2.0 (Research Edition v4 scaffold)}
+\date{April 2026 \\ \small Version 2.1 (Research Edition v4 scaffold, arXiv-prep)}
 
 \begin{document}
 \maketitle
@@ -228,7 +228,8 @@ We contribute:
 scaffold and fixes terminology. \S\ref{sec:related} positions the work
 against prior agentic security agents. \S\ref{sec:approach} describes the
 replicated pipeline. \S\ref{sec:implementation} covers implementation and
-reproducibility. \S\ref{sec:evaluation} states the planned evaluation.
+reproducibility. \S\ref{sec:evaluation} reports empirical deployment
+observations and cost telemetry.
 \S\ref{sec:discussion} presents the capability-boundary analysis.
 \S\ref{sec:ethics}--\S\ref{sec:conclusion} close with ethics, limitations,
 and a conclusion.
@@ -930,12 +931,13 @@ frameworks such as GLib/GObject and \texttt{json-glib} is incomplete.
 The ranker skips files over 2\,500~LOC, which is a real gap for large
 parser files. The public scaffold does not currently isolate agent
 execution in a sandbox; running against untrusted codebases locally is at
-the operator's own risk. Most substantively, this v1 report contains no
-primary benchmark evaluation of the pipeline itself: indicative cost
-numbers are reported in \S\ref{sec:eval-cost}, but controlled comparisons
-against OWASP Benchmark, Juliet CWE, a curated CVE regression set, and a
-Semgrep-only baseline are planned for v2 and are the principal object of
-future work.
+the operator's own risk. Most substantively, this report contains
+empirical \emph{deployment} observations and cost telemetry
+(\S\ref{sec:eval-cost}, \S\ref{sec:eval-yield}) but no controlled
+head-to-head benchmark; the methodological reasons for that choice
+are set out in \S\ref{sec:eval-why-no-bench}. Constructing an
+agentic-pipeline-appropriate, training-contamination-aware benchmark
+remains future work.
 
 % ===========================================================================
 \section{Conclusion}
