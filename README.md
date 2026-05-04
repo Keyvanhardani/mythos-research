@@ -40,11 +40,13 @@ caveat that the heaviest exploit-development tasks still favour Anthropic's inte
 ## Pipeline
 
 <p align="center">
-  <img src="assets/01_pipeline.png" alt="Mythos 7-phase pipeline" width="880"/>
+  <img src="assets/01_pipeline.png" alt="Mythos pipeline" width="880"/>
 </p>
 
-Seven phases, parameterised. Phases 0–4 and 6 are open in this edition.
-**Phase 5 (live-exec validation) is held private** and not included — see [Scope](#scope).
+The current default (`scripts/mythos-v4.sh`) runs eight phases. Phases 0–4, 6, and 7 are
+open in this edition. **Phase 5 (live-exec validation) is held private** and not included —
+see [Scope](#scope). v3.1 (`scripts/mythos-v3.sh`) remains available as the seven-phase
+fallback used in the original report.
 
 - **Phase 0 — Language detection.** Dominant language of the target tree → selects a language-specific
   *vulnerability-semantics prompt* (`prompts/vsp-<lang>.md`).
@@ -53,13 +55,40 @@ Seven phases, parameterised. Phases 0–4 and 6 are open in this edition.
 - **Phase 2 — File ranking.** Files are tiered by sink-category density. High-yield categories
   (deserialization, code-eval, SQL injection, prototype pollution, XXE, framework footguns, sanitiser
   gaps, browser-API footguns) dominate; files whose matches are all in `SAFE_*` variants are demoted.
-- **Phase 3 — Agentic hunt.** One Claude-Code subagent per top-ranked file, parallelised. The agent is
-  given the per-file sink slice, the VSP, and (optionally) a per-run **diversity focus hint**.
-- **Phase 4 — Skeptical validation.** A second-pass agent re-reads the source and the finding with an
-  explicit *skeptical reviewer* framing. Output:
+- **Phase 2.5 — Build sandbox** *(v4)*. `lib/build-sandbox.sh` prepares a per-scan scratch
+  directory with the target compiled (ASan if C/C++, venv + pip if Python, npm install if
+  Node). Hunters get scoped Bash + Edit + Write inside the scratch dir and read-only Read
+  on the source tree. Skip with `--no-build-sandbox`.
+- **Phase 3 — Agentic hunt.** One Claude-Code subagent per top-ranked file, parallelised. In
+  v4 the hunter brief (`prompts/hunter-agent-live.md`) instructs the agent to test
+  hypotheses against the live build instead of tracing statically. v4 also exposes
+  `--prompt-style minimal` (`prompts/hunter-agent-minimal.md`) for an A/B against the
+  Mythos-Preview-style minimal prompt.
+- **Phase 3.5 — Adversarial self-challenge** *(v4)*. Each finding is fed back to a fresh
+  agent with `prompts/self-challenge.md` asking for the strongest counter-argument. Findings
+  flagged `ADVERSE` are dropped before validation. Skip with `--no-self-challenge`.
+- **Phase 4 — Skeptical validation.** A second-pass agent re-reads the source and the
+  finding with an explicit *skeptical reviewer* framing. In v4 the validator pre-loads
+  cross-session false-positive memory from `dismissals/<target_id>.json` so the same FP is
+  not re-flagged across runs. Output:
   `CONFIRMED | FALSE_POSITIVE | DOWNGRADED | NEEDS_MORE_INFO`.
 - **Phase 6 — Aggregate.** JSON summary with severity breakdown, per-phase cost telemetry, and the
   validator verdict for each finding.
+- **Phase 7 — FP-memory writeback** *(v4)*. Persists this run's `FALSE_POSITIVE` and
+  `ADVERSE` markings into `dismissals/<target_id>.json` (scoped per target via the
+  realpath SHA-256), so future runs against the same target avoid re-discovering them.
+
+### Optional companion utilities
+
+- **`scripts/mythos-commit.sh`** — SHA-3-256 commitment scheme for unpatched-bug
+  accountability. Lets you publish a hash now and reveal the finding later, mirroring
+  the pattern from the published Mythos paper.
+- **`prompts/patch-gen.md`** — given a finding, drafts a minimal-correct fix as a
+  git-applyable diff plus a regression test that fails without the patch.
+- **`prompts/disclosure-writeup.md`** — vendor-ready report templates per channel
+  (GHSA, HackerOne, CVE, Bugzilla, vendor-email, oss-security).
+- **`prompts/mitigation-map.md`**, **`prompts/reliability-test.md`** — defensive analysis
+  helpers for severity calibration and finding-stability QA.
 
 ## Cost, roughly
 
@@ -82,7 +111,8 @@ file, each seeded with a different *focus hint* drawn from (a) the sink categori
 `socket.on`, `req.body`).
 
 Empirically: `K = 2..3` catches distinct classes of findings in the same file without exploding cost.
-`K = 1` is the v2-compatible default.
+`K = 1` is the v2-compatible default. v4 raises the default to `K = 3` because the
+build-sandbox phase already amortises the cache-warm cost across the K runs.
 
 ## Quick start
 
@@ -94,14 +124,22 @@ cd mythos-research
 # 2) make sure Claude Code CLI is available
 claude --version
 
-# 3) run against a target directory (read-only)
+# 3) v4 (default since v2.0) — eight-phase pipeline with build sandbox,
+#    self-challenge, and cross-session FP memory
+bash scripts/mythos-v4.sh /path/to/target --max-files 8 --budget 3.00
+
+# optional: minimal prompt style (Mythos-Preview-paper baseline for A/B)
+bash scripts/mythos-v4.sh /path/to/target --prompt-style minimal
+
+# optional: drop the build-sandbox phase (e.g. for languages without a build step)
+bash scripts/mythos-v4.sh /path/to/target --no-build-sandbox
+
+# optional: drop self-challenge (faster, ~25 % cheaper, more false positives)
+bash scripts/mythos-v4.sh /path/to/target --no-self-challenge
+
+# v3.1 fallback — seven-phase pipeline, no live tools, no FP memory.
+# Used in the original Research Edition report.
 bash scripts/mythos-v3.sh /path/to/target --max-files 8 --budget 3.00
-
-# optional: diverse sampling (K independent hunters per file)
-bash scripts/mythos-v3.sh /path/to/target --pass-at-k 3
-
-# optional: skip everything that would need exec-validator.sh
-bash scripts/mythos-v3.sh /path/to/target --skip-exec
 ```
 
 Reports land in `reports/<scan-id>/summary.json` and per-file `findings/` + `validated/` JSONs.
@@ -147,14 +185,19 @@ See [`SECURITY.md`](SECURITY.md) for details.
 
 ## Evolution (version history)
 
-Mythos went through three scaffolded iterations — all three are present for pedagogical reference:
+Mythos went through four scaffolded iterations — all are present for pedagogical reference:
 
 - **`scripts/archive/mythos-scan.sh`** — v1, original main orchestrator. Simpler, no
   sink-slicer.
 - **`scripts/archive/mythos-v2.sh`** — v2, adds sink-slicing + ranker + skeptical validator.
-- **`scripts/mythos-v3.sh`** — v3 (current). Adds per-run diversity seeding, pass@k, per-phase cost
-  telemetry, and the Phase 5 hook (held private).
-- **`scripts/archive/pass-at-k.sh`** — the v2-era standalone diversity driver; in v3 this is folded
+- **`scripts/mythos-v3.sh`** — v3 (basis of the original Research Edition report). Adds
+  per-run diversity seeding, pass@k, per-phase cost telemetry, and the Phase 5 hook
+  (held private).
+- **`scripts/mythos-v4.sh`** — v4 / **current default since v2.0**. Adds Phase 2.5 build
+  sandbox, Phase 3 live-exploration hunters with scoped Bash/Edit/Write, Phase 3.5
+  adversarial self-challenge, cross-session false-positive memory, and Phase 7
+  dismissals writeback. Companion `mythos-commit.sh` adds SHA-3-256 finding commitment.
+- **`scripts/archive/pass-at-k.sh`** — the v2-era standalone diversity driver; in v3+ this is folded
   into the main orchestrator via `--pass-at-k K`.
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the prose version.

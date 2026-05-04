@@ -30,6 +30,14 @@ else
     # Try to locate any bundled rg in a claude-code install.
     RG="$(find /home /usr /opt -type f -name rg -executable 2>/dev/null | grep -m1 ripgrep)"
 fi
+# Fallback: claude-code ships a bundled ripgrep. Look it up via the CLI's
+# vendor path if PATH didn't have one.
+if [ -z "${RG:-}" ] && command -v claude >/dev/null 2>&1; then
+    CLAUDE_BIN="$(command -v claude)"
+    CLAUDE_DIR="$(dirname "$(readlink -f "$CLAUDE_BIN" 2>/dev/null || echo "$CLAUDE_BIN")")"
+    BUNDLED_RG="$(find "$CLAUDE_DIR" -type f -name rg -executable 2>/dev/null | head -1)"
+    [ -n "$BUNDLED_RG" ] && RG="$BUNDLED_RG"
+fi
 if [ -z "${RG:-}" ] || [ ! -x "$RG" ]; then
     echo "ripgrep (rg) not found on PATH. Install it (apt install ripgrep)." >&2
     exit 1
@@ -52,6 +60,25 @@ RG_EXCLUDE=(
     -g '!**/tests/**' -g '!**/test/**' -g '!**/__tests__/**'
     -g '!**/*.test.*' -g '!**/*.spec.*'
     -g '!**/fixtures/**'
+    # v2.0: exclude tutorial/demo/sample directories. In a curl audit the
+    # `docs/examples/*.c` tree captured all top-12 ranking slots because
+    # tutorials demo every API and have high sink density, while real
+    # `lib/` code uses wrapped helpers that the slicer doesn't see.
+    -g '!**/docs/examples/**'
+    -g '!**/examples/**'
+    -g '!**/example/**'
+    -g '!**/demos/**'
+    -g '!**/demo/**'
+    -g '!**/samples/**'
+    -g '!**/sample/**'
+    -g '!**/tutorial/**'
+    -g '!**/tutorials/**'
+    # Yarn PnP / Berry runtime files (single-shot generated loader, very
+    # high sink density that distracts the ranker).
+    -g '!**/.pnp.cjs'
+    -g '!**/.pnp.loader.mjs'
+    -g '!**/.pnp.*.js'
+    -g '!**/.yarn/**'
     # Composer/NPM/Python auto-generated metadata inside per-app vendor trees.
     -g '!**/composer/**'
     -g '!**/InstalledVersions.php'
