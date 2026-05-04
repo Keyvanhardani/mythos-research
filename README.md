@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://doi.org/10.5281/zenodo.19727857"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.19727857.svg"/></a>
+  <a href="https://doi.org/10.5281/zenodo.19727857"><img alt="DOI" src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19727857-3a87a8?style=flat-square"/></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square"/></a>
   <a href="https://github.com/Keyvanhardani/mythos-research/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Keyvanhardani/mythos-research?style=flat-square&color=slategray"/></a>
   <a href="dist/Mythos-Research-Edition.pdf"><img alt="Research report (PDF)" src="https://img.shields.io/badge/paper-PDF-7a5442?style=flat-square"/></a>
@@ -55,7 +55,7 @@ development, and at roughly 25–50× lower cost per run**. The heaviest exploit
 tasks — heap-shaping, CTF-grade chains, binary-only analysis — still favour the specialised
 checkpoint. The discovery, ranking, sceptical-validation, and triage phases do not.
 
-## Honest about what this is *not*
+## What this is not
 
 A few things, plainly:
 
@@ -208,7 +208,7 @@ fallback used in the original report.
 - **`prompts/mitigation-map.md`**, **`prompts/reliability-test.md`** — defensive analysis
   helpers for severity calibration and finding-stability QA.
 
-## Cost, roughly
+## Per-run cost
 
 Mythos targeted scans (≤ 10 files, `--budget 3.00` per hunter) land at **$0.30 – $1.50 per run** on
 `claude-opus-4-7`. Anthropic's published Glasswing runs on `claude-mythos-preview` are in the
@@ -216,7 +216,7 @@ Mythos targeted scans (≤ 10 files, `--budget 3.00` per hunter) land at **$0.30
 choice (internal preview vs general-purpose). For self-scanning an individual OSS project, the
 cheap end is sufficient.
 
-## Diversity seeding (the Anthropic-replication point)
+## Diversity seeding
 
 Anthropic's key insight is that sampling diverse traces from the same input dramatically increases
 bug-discovery breadth. Mythos v3 adapts this with **`--pass-at-k K`**: K independent hunter runs per
@@ -285,7 +285,7 @@ process. Do **not** publish PoCs before the vendor has acknowledged and patched.
 
 See [`SECURITY.md`](SECURITY.md) for details.
 
-## Limitations, honestly
+## Limitations
 
 - **Sink catalogues are not exhaustive.** The GLib / GObject / json-glib family in particular is not
   yet covered in `sinks/c-cpp.txt`; PRs welcome.
@@ -331,8 +331,8 @@ same pattern Anthropic describes in their paper.
 
 - [`RESEARCH.md`](RESEARCH.md) — full research analysis: what Glasswing actually does, the benchmark
   gap, what scaffolding can and cannot close, prompting techniques that work, multi-agent patterns.
-- [`dist/Mythos-Research-Edition.pdf`](dist/Mythos-Research-Edition.pdf) — the same report as a
-  publication-ready PDF (Charter / DejaVu Sans, TU Darmstadt-style formatting).
+- [`dist/Mythos-Research-Edition.pdf`](dist/Mythos-Research-Edition.pdf) — the report
+  as a publication-ready PDF.
 - [`paper/`](paper/) — arXiv-ready LaTeX source (`paper.tex` + `references.bib` + `Makefile`).
 - [`scripts/V3_DESIGN.md`](scripts/V3_DESIGN.md) — v3 design doc (goals, deltas to v2, metrics).
 
@@ -362,9 +362,10 @@ repository. A machine-readable `CITATION.cff` is provided at the repository root
 
 Apache License 2.0. See [`LICENSE`](LICENSE).
 
-For human reading: you may use, modify and redistribute this code for lawful purposes, including
-commercial. You may not use it to attack systems you have no authorisation to audit. Coordinated
-disclosure is expected for any vulnerability surfaced with Mythos's help.
+The licence permits use, modification, and redistribution for lawful purposes, including
+commercial use. Use against systems without explicit authorisation is outside the intended
+scope. Coordinated disclosure is expected for any vulnerability surfaced with the help of
+this scaffold.
 
 ## Author
 
