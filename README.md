@@ -117,6 +117,52 @@ A few things, plainly:
 - **Black-box or binary-only targets.** The pipeline assumes source-code access. Stripped
   binaries are out of scope.
 
+## Deployment record (qualitative)
+
+Across the operator's coordinated-disclosure work to date, the pipeline has surfaced
+at least one validator-confirmed candidate finding on every audited target. The target
+record covers OSS libraries in C/C++, Python, PHP, JavaScript/TypeScript; embedded
+firmware codebases; Linux kernel-side modules; PHP/Node server applications; and
+web-application targets audited with operator authorisation. Specific projects, advisory
+identifiers, and finding details are deliberately not enumerated here in line with
+coordinated-disclosure norms; the public record lives at the
+[Wordfence Threat Intel researcher page](https://www.wordfence.com/threat-intel/vulnerabilities/researchers/keyvan-hardani),
+on the operator's [ORCID profile](https://orcid.org/0009-0000-6003-8826), and surfaces in
+the repository's `disclosures/` directory as embargoes lift.
+
+This is reported as a qualitative observation, not a controlled hit-rate: target selection
+in the operator's CVD workflow is not random, and the scaffold's design biases toward
+high-yield projects via the file-ranking phase. What can be claimed in good faith is that
+the pipeline has not returned an empty report on any audited target in the deployment
+record to date, that this generalises across the language families and target types
+listed above, and that the finding-yield is robust enough that the operator's CVD
+workflow uses the public scaffold as the discovery stage by default.
+
+## Held-private extensions (not in this repository)
+
+The Research Edition is the public, finding-first subset of a larger toolchain. The
+held-private extension is what turns a discovered candidate into a substantiated
+advisory — it is what the operator's published CVEs and security advisories run on
+in combination with the public Research Edition. The phases below are documented
+here for reproducibility of the capability claim. **The orchestrator scripts, prompts,
+and per-platform exploit-development modes are not released.**
+
+| Phase | Capability |
+|---|---|
+| **5a — Exec-primitive labelling** | Maps each finding to a reachable primitive: arbitrary read, controlled write, control-flow hijack, authentication bypass, SQL data dump, path traversal, internal SSRF. |
+| **5b — Chain construction** | Combines primitives toward concrete capability goals: pre-authentication RCE, privilege escalation, sandbox escape. |
+| **5c — Reliability testing** | Runs N independent trials per chain; emits `RELIABLE / FLAKY / UNRELIABLE`. |
+| **5d — Mitigation enumeration** | Per-OS, per-mitigation enumeration (ASLR, DEP, CFI/CFG, PatchGuard, HVCI, PAC/PPL, AMFI/SIP, KASLR, SMEP, SMAP, PTI, stack-protector variants) for severity calibration. |
+| **5e — Sandbox-escape patterns** | Renderer-to-broker, container-to-host, jail-to-host, seccomp-filter abuse, container-runtime descriptor-leak patterns. |
+| **5p — Platform-exploit dispatcher** | Per-platform exploit-development modes (web, Windows, macOS, mobile, network, kernel) backed by a Kali-based ephemeral analysis sandbox. |
+| **R — Recon** | Optional broad-pass enumeration, used only when the operator's CVD authorisation explicitly extends to external attack surface. |
+
+These are deliberately omitted from the public artefact in line with coordinated-disclosure
+norms — to keep this repository a *research scaffold* rather than a turn-key offensive
+framework. Substantive collaboration on the held-private extension is possible under
+explicit research-partnership terms; contact the operator if your work falls within that
+scope.
+
 ## Pipeline
 
 <p align="center">
