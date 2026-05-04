@@ -318,7 +318,8 @@ repository. A machine-readable `CITATION.cff` is provided at the repository root
   doi          = {10.5281/zenodo.19727857},
   url          = {https://doi.org/10.5281/zenodo.19727857},
   note         = {ORCID 0009-0000-6003-8826.
-                  Concept DOI; for version-specific citation use
+                  Concept DOI (always-latest). For version-specific citation:
+                  10.5281/zenodo.20022293 (v2.0.0, current),
                   10.5281/zenodo.19727858 (v1.0.2).}
 }
 ```
