@@ -387,17 +387,7 @@ defensive red-team research.
 \subsection{Pipeline overview}
 \label{sec:approach-overview}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{../assets/01_pipeline.png}
-\caption{Eight-phase pipeline of Mythos Research Edition (v4 default).
-Phases 0--4, 6, and 7 are public; Phase~5 (live-exec validation) is held
-out of the public repository in line with coordinated-disclosure
-practice~(\S\ref{sec:approach-phase5}).}
-\label{fig:pipeline}
-\end{figure}
-
-Figure~\ref{fig:pipeline} summarises the pipeline. Phase~0 detects the
+The pipeline. Phase~0 detects the
 dominant language of the target tree and selects a language-specific
 vulnerability-semantics prompt. Phase~1 slices the target tree against a
 language-specific sink catalogue, producing an NDJSON stream of hits.

@@ -161,10 +161,6 @@ scope.
 
 ## Pipeline
 
-<p align="center">
-  <img src="assets/01_pipeline.png" alt="Mythos pipeline" width="880"/>
-</p>
-
 The current default (`scripts/mythos-v4.sh`) runs eight phases. Phases 0–4, 6, and 7 are
 open in this edition. **Phase 5 (live-exec validation) is held private** and not included —
 see [Scope](#scope). v3.1 (`scripts/mythos-v3.sh`) remains available as the seven-phase
@@ -213,10 +209,6 @@ fallback used in the original report.
   helpers for severity calibration and finding-stability QA.
 
 ## Cost, roughly
-
-<p align="center">
-  <img src="assets/02_cost.png" alt="Cost comparison" width="720"/>
-</p>
 
 Mythos targeted scans (≤ 10 files, `--budget 3.00` per hunter) land at **$0.30 – $1.50 per run** on
 `claude-opus-4-7`. Anthropic's published Glasswing runs on `claude-mythos-preview` are in the
