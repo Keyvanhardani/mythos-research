@@ -1,11 +1,6 @@
 <h1 align="center">Mythos Research Edition</h1>
 
 <p align="center">
-  <sub>A local, open-source scaffold for agentic vulnerability discovery.<br/>
-  Inspired by Anthropic's <a href="https://red.anthropic.com/2026/mythos-preview/"><code>claude-mythos-preview</code></a> (Project Glasswing, April 2026).</sub>
-</p>
-
-<p align="center">
   <a href="https://doi.org/10.5281/zenodo.19727857"><img alt="DOI" src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19727857-3a87a8?style=flat-square"/></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square"/></a>
   <a href="https://github.com/Keyvanhardani/mythos-research/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Keyvanhardani/mythos-research?style=flat-square&color=slategray"/></a>
@@ -15,6 +10,9 @@
   <img alt="Disclosure" src="https://img.shields.io/badge/disclosure-coordinated_only-7a5442?style=flat-square"/>
 </p>
 
+> **An open-source, outside-in replication of Anthropic's [Mythos Preview](https://red.anthropic.com/2026/mythos-preview/) / [Project Glasswing](https://www.anthropic.com/glasswing) — built around the publicly available [Claude Opus 4.7](https://github.com/anthropics/claude-code) model and runnable on commodity hardware.** Mythos Research Edition reproduces the eight-phase agentic vulnerability-discovery scaffold described in the April 2026 Glasswing announcement, at roughly **$0.30 – $1.50 per targeted scan** and without access to Anthropic's specialised model checkpoint. The scaffold has been deployed in coordinated-disclosure work that has surfaced multiple CVEs and GitHub Security Advisories across OSS projects.
+
+> **For:** open-source maintainers self-scanning before release, security researchers running audits on projects they are authorised to audit, academic groups replicating the Mythos methodology, and individual researchers who cannot get on the Glasswing allow-list. **Not for:** mass scanning, MSP/MSSP managed-service workflows, or turn-key offensive use against unauthorised systems.
 
 ---
 
