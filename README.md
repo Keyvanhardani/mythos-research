@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/04_hero.png" alt="Mythos Research Edition" width="880"/>
-</p>
-
 <h1 align="center">Mythos Research Edition</h1>
 
 <p align="center">
