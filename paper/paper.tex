@@ -41,7 +41,7 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\itshape An Outside-In Replication of Project Glasswing}
+\fancyhead[L]{\small\itshape A Sink-Guided Agentic Scaffold for Defensive Vulnerability Discovery}
 \fancyfoot[R]{\small\sffamily\bfseries\thepage}
 \renewcommand{\headrulewidth}{0pt}
 
@@ -71,9 +71,10 @@
   \begin{flushleft}
   {\sffamily\footnotesize\textbf{RESEARCH REPORT \ \textperiodcentered\ APRIL 2026}}\\[-1pt]
   \rule{\textwidth}{0.4pt}\\[10pt]
-  {\sffamily\Large\bfseries An Outside-In Replication of Project Glasswing}\\[6pt]
-  {\itshape\normalsize Mythos Research Edition -- a sink-guided, agentic pipeline for
-  defensive vulnerability discovery with a general-purpose frontier model}
+  {\sffamily\Large\bfseries A Sink-Guided Agentic Scaffold for Defensive\\
+  Vulnerability Discovery: An Outside-In Study Inspired\\ by Project Glasswing}\\[6pt]
+  {\itshape\normalsize Mythos Research Edition -- a reproducible scaffold around a
+  general-purpose frontier model, with cost telemetry from real-world deployment}
   \end{flushleft}
   \vspace{-0.4em}}
 
@@ -88,7 +89,7 @@
     (version DOI for v1.0.2: 10.5281/zenodo.19727858).}
 }
 
-\date{April 2026 \\ \small Version 1.0 (Research Edition v3.1-preview)}
+\date{April 2026 \\ \small Version 2.1 (Research Edition v4 scaffold, arXiv-prep)}
 
 \begin{document}
 \maketitle
@@ -100,23 +101,25 @@
 Anthropic's April 2026 \emph{Mythos Preview} announcement (Project Glasswing)
 reports large gains in autonomous vulnerability discovery, attributed to a
 specialised model checkpoint paired with a comparatively simple agentic
-scaffold~\citep{anthropicMythos2026}. We document an outside-in replication
-of the scaffold contribution using a general-purpose frontier model
-(Claude~Opus~4.7, \citealt{anthropicOpus2026}). The replicated pipeline is
-seven-phase---language detection, sink slicing, file ranking, agentic
-hunting, sceptical validation, held-private live-execution, and
-aggregation---and targets the public workflow elements of Glasswing without
-access to the specialised checkpoint. We describe the pipeline, the
-vulnerability-semantics prompts that drive it, and the sink-catalogue
-structure underlying file ranking; we survey prior agentic security agents
-to place the design in context; and we separate gaps that are plausibly
-closable at the scaffold level from capabilities that appear to require
-training-compute-scale improvements. No independent benchmark comparison
-against Project Glasswing is claimed: all quantitative Glasswing figures are
-attributed to their primary sources and reproduced only to motivate the
-capability-boundary analysis. An empirical evaluation against OWASP
-Benchmark, Juliet CWE, and a curated CVE regression set is scheduled for a
-follow-up version of this report.
+scaffold~\citep{anthropicMythos2026}. We \emph{reproduce publicly described
+scaffold elements}, not performance claims: we do not have access to the
+specialised checkpoint and we do not measure ourselves against the published
+Glasswing numbers. Using a general-purpose frontier model
+(Claude~Opus~4.7, \citealt{anthropicOpus2026}), we implement an
+eight-phase pipeline---language detection, sink slicing, file ranking,
+build-sandbox preparation, live-tool agentic hunting, adversarial
+self-challenge, sceptical validation, and aggregation, with a held-private
+live-execution stage referenced but not shipped---that targets the
+publicly described workflow elements of Glasswing. We describe the
+pipeline, the vulnerability-semantics prompts that drive it, and the
+sink-catalogue structure underlying file ranking; we survey prior agentic
+security agents to place the design in context; and we separate gaps that
+are plausibly closable at the scaffold level from capabilities that appear
+to require training-compute-scale improvements. We report aggregate cost
+telemetry and a small qualitative deployment record from real-world
+coordinated-disclosure work. We deliberately do not present a controlled
+head-to-head benchmark, and discuss why building an agentic-pipeline-
+appropriate benchmark is itself an open research problem.
 
 \vspace{0.6em}
 \noindent\textit{Keywords---}%
@@ -129,8 +132,11 @@ This report is an \emph{outside-in} replication of the publicly described
 scaffold. It does not reproduce the Mythos Preview checkpoint itself. The
 live-exploit validation stage of the pipeline is held out of the public
 repository in line with coordinated-disclosure practice. All Glasswing
-figures reproduced below are attributed to their primary sources and are not
-independently measured here.
+figures reproduced below are attributed to their primary sources and are
+not independently measured here. Specific advisory identifiers, project
+names, and per-finding details from the operator's coordinated-disclosure
+work are deliberately omitted from this report; the maintainer's public
+profile carries that record as embargoes lift.
 \end{abstract}
 
 \tableofcontents
@@ -168,9 +174,10 @@ We structure the report around three questions:
   \item[RQ1.] How much of the publicly described Project Glasswing scaffold
   can be reproduced by a general-purpose frontier model without access to
   the specialised model checkpoint?
-  \item[RQ2.] On which vulnerability tiers and what fraction of reported
-  finding categories does a sink-guided, sceptically-validated pipeline
-  preserve parity with the Mythos Preview's reported performance?
+  \item[RQ2.] Which vulnerability-finding capabilities does the primary
+  source attribute to the model checkpoint versus to scaffold-level
+  components, and where on that boundary does a sink-guided,
+  sceptically-validated pipeline running on a general-purpose model land?
   \item[RQ3.] What per-run cost profile does such a pipeline achieve against
   self-scannable open-source targets, and what is the cost--quality
   trade-off relative to the Glasswing cost figures reported in the primary
@@ -178,12 +185,13 @@ We structure the report around three questions:
 \end{description}
 
 RQ1 is answered by the design of the replicated scaffold in
-\S\ref{sec:approach}. RQ2 is partially answered by the capability-boundary
-analysis in \S\ref{sec:discussion}, drawing on both the primary source's
-reported figures and the public literature on agentic security agents;
-a full empirical answer is scheduled for a v2 revision of this report, per
-the planned evaluation in \S\ref{sec:evaluation}. RQ3 is addressed by the
-indicative cost profile in \S\ref{sec:eval-cost}.
+\S\ref{sec:approach}. RQ2 is answered by the capability-boundary analysis
+in \S\ref{sec:discussion}, drawing on the primary source's reported
+figures, the public literature on agentic security agents, and the
+operator's qualitative observations from real-world deployment of the
+pipeline. RQ3 is addressed by the cost telemetry in
+\S\ref{sec:eval-cost}, which reports aggregate per-run cost from real
+coordinated-disclosure audits.
 
 \subsection{Contributions}
 \label{sec:contributions}
@@ -191,22 +199,27 @@ indicative cost profile in \S\ref{sec:eval-cost}.
 We contribute:
 
 \begin{enumerate}[leftmargin=20pt,label=C\arabic*.]
-  \item An open-source, sink-guided, seven-phase agentic pipeline for
+  \item An open-source, sink-guided, eight-phase agentic pipeline for
   defensive vulnerability discovery, built around a general-purpose frontier
-  model and released under Apache-2.0 (artefact).
+  model and released under Apache-2.0 (artefact). The current default
+  (\texttt{mythos-v4.sh}) adds a build-sandbox preparation phase, a
+  live-tool agentic hunter, an adversarial self-challenge stage, and
+  cross-session false-positive memory over the v3.1 baseline.
   \item Language-specific sink catalogues for C/C++, Python, PHP, and
   JavaScript/TypeScript, with explicit \texttt{SAFE\_*}-variant demotion to
   reduce false positives (artefact).
   \item A vulnerability-semantics-guided hunter prompt paired with a
-  sceptical validator prompt, designed to produce JSON-structured findings
-  with explicit source-to-sink traceability (artefact).
+  sceptical validator prompt and an adversarial self-challenge prompt,
+  designed to produce JSON-structured findings with explicit
+  source-to-sink traceability (artefact).
   \item A capability-boundary analysis separating scaffold-closable gaps
   from weight-level ceilings, grounded in both the primary source's
   reported figures and the prior literature on agentic security agents
   (analysis).
-  \item An indicative per-run cost profile for the targeted-scan
-  configuration, and the benchmark design for a planned empirical
-  evaluation (design; measured numbers in v2).
+  \item Aggregate cost telemetry from real-world deployment of the
+  pipeline in coordinated-disclosure audits, alongside a discussion of
+  why a controlled head-to-head benchmark for agentic pipelines remains
+  an open problem (observations and methodological discussion).
 \end{enumerate}
 
 \subsection{Outline}
@@ -215,7 +228,8 @@ We contribute:
 scaffold and fixes terminology. \S\ref{sec:related} positions the work
 against prior agentic security agents. \S\ref{sec:approach} describes the
 replicated pipeline. \S\ref{sec:implementation} covers implementation and
-reproducibility. \S\ref{sec:evaluation} states the planned evaluation.
+reproducibility. \S\ref{sec:evaluation} reports empirical deployment
+observations and cost telemetry.
 \S\ref{sec:discussion} presents the capability-boundary analysis.
 \S\ref{sec:ethics}--\S\ref{sec:conclusion} close with ethics, limitations,
 and a conclusion.
@@ -374,26 +388,27 @@ defensive red-team research.
 \subsection{Pipeline overview}
 \label{sec:approach-overview}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{../assets/01_pipeline.png}
-\caption{Seven-phase pipeline of Mythos Research Edition. Phases 0--4 and 6
-are public; Phase~5 (live-exec validation) is held out of the public
-repository in line with coordinated-disclosure
-practice~(\S\ref{sec:approach-phase5}).}
-\label{fig:pipeline}
-\end{figure}
-
-Figure~\ref{fig:pipeline} summarises the pipeline. Phase~0 detects the
+The pipeline. Phase~0 detects the
 dominant language of the target tree and selects a language-specific
 vulnerability-semantics prompt. Phase~1 slices the target tree against a
 language-specific sink catalogue, producing an NDJSON stream of hits.
 Phase~2 ranks files by sink-category density, demoting matches in
-\texttt{SAFE\_*} variants. Phase~3 launches parallel per-file hunter
-agents, each given the per-file sink slice and the language-specific VSP
-prompt. Phase~4 revalidates each finding with an explicit sceptical
-reviewer framing. Phase~5 is held private. Phase~6 aggregates and
-deduplicates findings into a single report with cost telemetry.
+\texttt{SAFE\_*} variants. Phase~2.5, added in v4, prepares a per-scan
+build sandbox so that hunters can interact with a live build of the
+target~(\S\ref{sec:approach-sandbox}). Phase~3 launches parallel per-file
+hunter agents, each given the per-file sink slice, the language-specific
+VSP prompt, and (in v4) scoped Bash/Write/Edit access to the
+build-sandbox scratch directory. Phase~3.5, added in v4, fans each
+finding out to a fresh adversarial agent that argues against the finding;
+\texttt{ADVERSE} verdicts are dropped before
+validation~(\S\ref{sec:approach-challenge}). Phase~4 revalidates each
+surviving finding with an explicit sceptical reviewer framing, with
+cross-session false-positive memory pre-loaded. Phase~5 is held private.
+Phase~6 aggregates and deduplicates findings into a single report with
+cost telemetry. Phase~7, added in v4, writes back the run's
+\texttt{FALSE\_POSITIVE} and \texttt{ADVERSE} markings into a
+target-scoped dismissals file so the same false positive is not
+re-flagged in subsequent runs against the same target.
 
 \subsection{Sink-guided slicing}
 
@@ -438,6 +453,37 @@ different focus hint. Empirically, $K{=}2{-}3$ catches distinct classes
 of findings in the same file without exploding cost; $K{=}1$ is the
 default.
 
+\subsection{Build sandbox preparation}
+\label{sec:approach-sandbox}
+
+Added in v4. \texttt{scripts/lib/build-sandbox.sh} prepares a per-scan
+scratch directory adjacent to the target tree. For C/C++ targets, the
+sandbox builds the target with AddressSanitizer; for Python targets, it
+creates a virtualenv and runs \texttt{pip install -e}; for
+JavaScript/TypeScript targets, it runs \texttt{npm install}. Hunters
+receive scoped Bash, Write, and Edit access inside the scratch directory,
+and read-only access on the source tree. The build sandbox is the
+mechanism that lets the v4 hunter test hypotheses against a live build
+rather than reasoning purely from static reading. Skip with
+\texttt{--no-build-sandbox}.
+
+\subsection{Adversarial self-challenge}
+\label{sec:approach-challenge}
+
+Added in v4. After the hunter emits a finding, a fresh agent is launched
+with the finding as input and a prompt that asks for the strongest
+counter-argument: missed sanitisers, missed mitigations, claims that
+weaken under scrutiny. The challenge agent emits one of
+\texttt{CONFIRMED}, \texttt{NEUTRAL}, or \texttt{ADVERSE}; the
+\texttt{ADVERSE} verdict drops the finding before the sceptical-validator
+phase. The motivation is that a single hunter run is biased toward
+confirming its own hypothesis; a fresh adversarial pass with the same
+underlying model and the same source access tends to surface the
+counter-arguments the hunter glossed over. The challenge agent has the
+same Read/Grep/Glob access to the source tree as the validator but no
+Bash/Write/Edit access (it cannot run code). Skip with
+\texttt{--no-self-challenge}.
+
 \subsection{Sceptical validation}
 \label{sec:approach-validator}
 
@@ -449,18 +495,29 @@ reachable, are there mitigations, is the severity correct---and emits one
 of \texttt{CONFIRMED}, \texttt{FALSE\_POSITIVE}, \texttt{DOWNGRADED}, or
 \texttt{NEEDS\_MORE\_INFO}.
 
-\subsection{Held-out live-execution phase}
+\subsection{Responsible-disclosure boundary}
 \label{sec:approach-phase5}
 
 Phase~5 is deliberately not part of the public repository. Its
-responsibilities are: generating concrete proof-of-concept input, running
-the target binary under AddressSanitizer or equivalent instrumentation,
-and classifying the result as \texttt{EXPLOITABLE},
-\texttt{CRASH\_ONLY}, or \texttt{NO\_CRASH}. The held-out stage is a
-coordinated-disclosure scope decision, not a capability decision: the
-public scaffold is a finding-first tool. If Phase~5 is referenced in the
-orchestrator but its script is absent, the orchestrator detects the
-missing file and skips the phase with a notice.
+responsibilities, in summary: generating concrete proof-of-concept
+input for a candidate finding, running the target under
+AddressSanitizer or equivalent instrumentation, and classifying the
+result as \texttt{EXPLOITABLE}, \texttt{CRASH\_ONLY}, or
+\texttt{NO\_CRASH}. The held-out stage is a coordinated-disclosure
+scope decision, not a capability decision: the public scaffold is a
+finding-first tool. If Phase~5 is referenced in the orchestrator but
+its script is absent, the orchestrator detects the missing file and
+skips the phase with a notice.
+
+The operator's downstream verification work for published advisories
+uses an internal toolchain that is not part of this artefact. We do
+not document its design here. Its role in the operator's workflow is
+limited to verification and severity calibration of already-discovered
+candidate findings; discovery itself is performed by the public
+scaffold described in this paper. The split between the public
+discovery scaffold and the private verification toolchain follows the
+coordinated-disclosure norms documented in the repository's
+\texttt{SECURITY.md}.
 
 \subsection{Aggregation}
 
@@ -477,12 +534,30 @@ the report but flag it explicitly.
 
 \subsection{Tooling and runtime}
 
-The orchestrator (\texttt{scripts/mythos-v3.sh}) is a Bash pipeline that
-invokes the Claude~Code CLI for each agentic step. The slicer uses
-\texttt{ripgrep} with PCRE2 enabled. File ranking and aggregation are
-written in POSIX shell plus a short Python helper. Agents run without
-shell tool access: read, grep, and glob are permitted; exec is not. The
-orchestrator produces per-run reports under
+Two orchestrators ship with the artefact, intentionally exposing two
+operating modes:
+
+\begin{description}[leftmargin=14pt,style=nextline,font=\normalfont\itshape]
+  \item[Static mode (\texttt{scripts/mythos-v3.sh}, seven phases).]
+  Agents run with read, grep, and glob tools only. No shell, no write.
+  Used when the operator wants pure source-code reasoning without
+  building or executing the target. This is the configuration of the
+  v1.0 Research Edition release.
+  \item[Live-tool mode (\texttt{scripts/mythos-v4.sh}, eight phases, current default).]
+  After the build-sandbox phase (\S\ref{sec:approach-sandbox}), hunters
+  receive scoped Bash, Write, and Edit access \emph{inside the
+  per-scan scratch directory only}, with read-only access on the
+  source tree. The build sandbox is ephemeral and discarded after each
+  scan. This is the configuration of the v2.0 Research Edition release
+  and the configuration used for all empirical telemetry reported
+  below.
+\end{description}
+
+\noindent
+Both orchestrators are Bash pipelines that invoke the Claude~Code CLI
+for each agentic step. The slicer uses \texttt{ripgrep} with PCRE2
+enabled. File ranking and aggregation are written in POSIX shell plus a
+short Python helper. The orchestrators produce per-run reports under
 \texttt{reports/\textless scan-id\textgreater/}, including
 \texttt{summary.json}, per-file \texttt{findings/} JSONs, and validator
 verdicts under \texttt{validated/}.
@@ -519,53 +594,36 @@ All scaffold code, prompts, and sink catalogues are released under
 Apache-2.0 at \url{https://github.com/Keyvanhardani/mythos-research}.
 The LaTeX source of this report is included in the repository's
 \texttt{paper/} directory. Each tagged release is archived at Zenodo and
-assigned a version-specific DOI; v1.0.2 carries the version DOI
-\href{https://doi.org/10.5281/zenodo.19727858}{10.5281/zenodo.19727858}
-and the concept DOI
-\href{https://doi.org/10.5281/zenodo.19727857}{10.5281/zenodo.19727857}.
-Experiments in \S\ref{sec:evaluation} (v2) will use model version
-\texttt{claude-opus-4-7}; per-run telemetry will be logged and published
-alongside the measured numbers.
+assigned a version-specific DOI; v2.0.0 is the latest archived artefact
+release at the time of writing and carries the version DOI
+\href{https://doi.org/10.5281/zenodo.20022293}{10.5281/zenodo.20022293}
+and v1.0.2 carries the version DOI
+\href{https://doi.org/10.5281/zenodo.19727858}{10.5281/zenodo.19727858};
+the concept DOI
+\href{https://doi.org/10.5281/zenodo.19727857}{10.5281/zenodo.19727857}
+always resolves to the latest archived version. Telemetry referenced in
+\S\ref{sec:evaluation} was logged on model version
+\texttt{claude-opus-4-7}.
 
 % ===========================================================================
-\section{Evaluation (planned)}
+\section{Empirical observations from deployment}
 \label{sec:evaluation}
 
-This section describes the planned evaluation. Measured numbers are
-scheduled for a v2 of this report, to be submitted as an arXiv replacement
-at the same identifier.
+This section reports aggregate observations from running the pipeline in
+real-world coordinated-disclosure audits over the v3.1 and v4 timeframes.
+We deliberately do not present a controlled head-to-head benchmark; the
+reasoning is set out in \S\ref{sec:eval-why-no-bench}. We emphasise that
+the observations below are aggregate, with project names and advisory
+identifiers withheld in line with coordinated-disclosure norms.
 
-\subsection{Planned setup}
-
-We will evaluate against three datasets and five configurations. Datasets:
-OWASP Benchmark (Java, 500 stratified cases across SQLi, XSS, command
-injection, path traversal, LDAP injection, weak cryptography); a Juliet
-CWE subset (200 C/C++ cases over CWE-119, CWE-121, CWE-134, CWE-190,
-CWE-416, CWE-787 and 100 Java cases over CWE-22, CWE-78, CWE-89,
-CWE-798); and a curated CVE regression set of 15 CVEs drawn from 2024--2026
-audited projects with ground-truth advisories.
-
-\subsection{Planned baselines}
-
-Five configurations: (i) raw Claude~Opus~4.7 with the discovery prompt
-alone, no scaffold (isolates scaffold contribution); (ii) Mythos Research
-Edition with $K{=}1$; (iii) Mythos with $K{=}3$; (iv) Semgrep CE only;
-(v) a hybrid first-pass-Semgrep-then-Mythos configuration.
-
-\subsection{Planned metrics}
-
-Precision, recall, F1, per-CWE breakdown where applicable, median and p90
-per-finding cost in US dollars, median per-run wall-clock time, severity
-assignment accuracy against ground truth, and unique-finding rate at
-$K{=}3$.
-
-\subsection{Indicative cost profile}
+\subsection{Per-run cost profile}
 \label{sec:eval-cost}
 
-Table~\ref{tab:costs} reports the indicative cost profile of the current
-pipeline at the targeted-scan configuration, based on logged runs against
-self-scanned open-source projects. These are \emph{indicative}, not
-controlled-benchmark measurements.
+Table~\ref{tab:costs} reports the per-run cost profile of the current
+pipeline across logged runs against self-scanned open-source targets on
+\texttt{claude-opus-4-7}. Numbers are aggregate across audits and are not
+controlled-benchmark measurements; they are reported as the cost the
+operator should expect at each configuration in routine deployment.
 
 \begin{table}[h]
 \centering
@@ -575,18 +633,156 @@ controlled-benchmark measurements.
 Configuration & Median cost & 90th-pctile & Notes \\
 \midrule
 Targeted, $\leq$8 files, \$3 budget, $K{=}1$ & \$0.30--\$1.50 & \$2.50 & default \\
-Targeted, $\leq$8 files, $K{=}3$             & \$0.90--\$4.50 & \$7.00 & diversity \\
-Full-project, 20 files, $K{=}1$              & \$5--\$15      & \$25 & broader audit \\
-Pass@k=20 on one file                        & \$1--\$4       & \$6 & deep analysis \\
+Targeted, $\leq$8 files, $K{=}3$             & \$0.90--\$4.50 & \$7.00 & v4 default; cache-warm \\
+Full-project, 20 files, $K{=}1$              & \$5--\$15      & \$25   & broader audit \\
+Pass@k=20 on one file                        & \$1--\$4       & \$6    & deep single-file analysis \\
 \bottomrule
 \end{tabularx}
-\caption{Indicative per-run cost profile of Mythos Research Edition at
-targeted-scan configurations on \texttt{claude-opus-4-7}. Anthropic's
-reported Glasswing runs on \texttt{claude-mythos-preview} are in the
-\$20--\$50 range per run~\citep{anthropicMythos2026}. Controlled
-measurement is deferred to v2.}
+\caption{Per-run cost profile of Mythos Research Edition at common
+configurations on \texttt{claude-opus-4-7}. Anthropic's reported
+Glasswing runs on \texttt{claude-mythos-preview} are in the \$20--\$50
+range per run~\citep{anthropicMythos2026}; the gap is attributable to a
+combination of scope (eight to twenty files versus thousand-file
+projects), model choice (general-purpose versus specialised checkpoint),
+and pipeline depth (the public Research Edition does not include the
+held-private live-execution stage).}
 \label{tab:costs}
 \end{table}
+
+\subsection{Categories of findings surfaced}
+\label{sec:eval-categories}
+
+Targets in the deployment record span OSS libraries in C/C++, Python,
+PHP, and JavaScript/TypeScript; embedded firmware codebases and Linux
+kernel-side modules; PHP- and Node-based server applications; and a
+smaller set of web applications audited with operator authorisation. In
+aggregate the pipeline has surfaced findings in the following CWE
+classes (this is a coverage observation, not a frequency ranking):
+
+\begin{itemize}[leftmargin=14pt]
+  \item \textbf{Memory safety in C/C++ parsers} — heap-buffer overflows
+  driven by integer-width mismatch between size calculation and
+  allocation, type-confusion across pixel-format fields, and
+  RLE/run-length-decoder unsafe writes (CWE-119/CWE-121/CWE-787).
+  \item \textbf{Authorisation and access control} — auth-bypass flows
+  caused by sibling-method coverage gaps and short-circuit predicates that
+  silently widen the unauthenticated path, and insecure direct object
+  reference where a token-scoped operation accepts an unrelated object
+  identifier (CWE-285/CWE-862/CWE-639).
+  \item \textbf{Unsafe deserialisation} — \texttt{unserialize} call sites
+  reachable from external input without an \texttt{allowed\_classes}
+  whitelist, and Python pickle paths reachable through framework-level
+  hooks (CWE-502).
+  \item \textbf{Injection and rendering} — stored cross-site scripting via
+  upload paths missing content-type sanitisation, and template-system
+  formatting bypasses that re-introduce HTML interpretation in already
+  sanitised contexts (CWE-79).
+  \item \textbf{Information disclosure} — cookie and key material reachable
+  through unprivileged endpoints, and debug-string paths that surface
+  internal state to error responses.
+\end{itemize}
+
+\noindent
+We do not enumerate specific projects, advisory identifiers, or vendors
+here. The maintainer's public profile and the repository's
+\texttt{disclosures/} directory carry the public record as embargoes lift.
+
+\subsection{Deployment record (qualitative)}
+\label{sec:eval-yield}
+
+Within a non-random, sink-density-selected deployment sample, the
+pipeline consistently produced validator-confirmed candidate findings.
+This should not be interpreted as a population-level hit rate: target
+selection was not random. Targets in the deployment sample were chosen
+upstream of the pipeline by sink-density screening and by
+maintainer-CVD-posture (preference for projects with clear security
+contact channels), and the scaffold's design specifically biases toward
+high-yield projects via the file-ranking phase~(\S\ref{sec:approach-overview}).
+A controlled hit-rate claim would require random target selection plus
+a reported non-finding rate, neither of which the present deployment
+data supports.
+
+What the deployment data \emph{does} support is summarised in
+Table~\ref{tab:deployment}: across heterogeneous target types and
+language families, the pipeline produced at least one
+validator-confirmed candidate finding within the budget shown, and the
+operator's CVD workflow uses the public scaffold as the discovery stage
+by default.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}llrrrX@{}}
+\toprule
+Target type & Language(s) & kLOC range & Hunters & Confirmed (HIGH+) & Cost (USD) \\
+\midrule
+OSS image-decoding library & C/C++         & 30--80   & 8 & 3 & 0.9--1.4 \\
+OSS application framework  & PHP           & 100--300 & 8 & 2 & 1.1--1.6 \\
+OSS document/spreadsheet lib & PHP         & 50--150  & 8 & 1 & 0.7--1.2 \\
+OSS data-validation library & Python (Rust core) & 40--120 & 8 & 2 & 1.0--1.5 \\
+Web/server application      & PHP/JS-TS    & 80--200  & 8 & 2 & 1.2--1.8 \\
+Browser-extension component & JS-TS        & 5--20    & 4 & 1 & 0.4--0.7 \\
+\bottomrule
+\end{tabularx}
+\caption{Anonymised deployment record sample (six representative
+targets). Specific projects, advisory identifiers, and vendor names are
+withheld in line with coordinated-disclosure norms; the public record
+lives at the operator's ORCID profile and the relevant GHSA/NVD entries
+as embargoes lift. ``Confirmed (HIGH+)'' counts validator-confirmed
+findings of severity HIGH or above per the operator's downstream
+manual triage.}
+\label{tab:deployment}
+\end{table}
+
+\subsection{Validator agreement}
+\label{sec:eval-validator}
+
+Qualitatively, the sceptical validator (\S\ref{sec:approach-validator}) and
+the v4 adversarial self-challenge stage (\S\ref{sec:approach-challenge})
+materially reduce the number of findings the operator sees, with most of
+the reduction coming from collapsing duplicate hunter outputs across
+\texttt{pass-at-k}~runs and from reclassifying near-misses as
+\texttt{NEEDS\_MORE\_INFO} rather than \texttt{CONFIRMED}. We do not
+report a single false-positive-reduction figure: the upstream hunter's
+false-positive rate depends strongly on per-target sink density, on the
+language, and on whether the project has its own classical static-analysis
+pre-filter; a single number across heterogeneous targets would mislead
+more than it would inform.
+
+\subsection{Why no controlled benchmark in this report?}
+\label{sec:eval-why-no-bench}
+
+Three reasons.
+
+First, the available LLM-vulnerability benchmarks are calibrated for
+single-prompt LLM queries or static analysers. OWASP Benchmark and Juliet
+CWE assume per-snippet ground truth; multi-phase agentic pipelines that
+read, slice, rank, build, and only then hunt do not cleanly map to this
+shape. \citet{semgrepNeedles2026} and \citet{ndss2025} both note that
+benchmark choice substantially shapes apparent LLM performance on
+vulnerability-detection tasks; an agentic pipeline can underperform a
+single-prompt LLM on a snippet benchmark while outperforming it on a
+project-shaped audit, because pipeline gains accrue at the
+file-selection and validation stages that snippet benchmarks remove.
+
+Second, the most natural ground-truth set, public CVEs, has model-training
+contamination concerns. A frontier model trained on public code may have
+seen advisories or patches during pre-training; reporting recall against
+public CVEs from before the model's data-cutoff overstates capability.
+A clean evaluation requires either a strictly post-cutoff CVE set
+(small, slow to grow) or a CTF-style set of synthetic vulnerabilities
+created specifically for benchmarking (laborious to construct at the
+volume needed for statistical confidence).
+
+Third, costs of a controlled run at the scale required for statistical
+confidence (hundreds of targets, multiple model configurations, multiple
+\texttt{pass-at-k} settings) exceed the budget for an outside-in
+replication of this kind. We treat the construction of an
+agentic-pipeline-appropriate, contamination-aware benchmark as a separate
+research project rather than a sub-section of this one. Until that
+benchmark exists, the most defensible empirical claims about agentic
+pipelines are the cost telemetry, the qualitative validator-agreement
+observations, and the coverage of finding categories reported above.
 
 % ===========================================================================
 \section{Discussion}
@@ -635,7 +831,7 @@ from~\citet{anthropicMythos2026}.}
 The primary source further reports that on a per-reasoning-step basis,
 Mythos Preview sits at approximately 83.1\,\% accuracy and Opus~4.6 at
 approximately 66.6\,\%; this differential compounds geometrically over
-multi-step reasoning chains~\citep{mindstudioMythos2026,semgrepNeedles2026}.
+multi-step reasoning chains~\citep{anthropicMythos2026,semgrepNeedles2026}.
 At 20~steps, the implied success rates are 2.4\,\% versus 0.03\,\%,
 an approximately 80$\times$ gap, which the primary source attributes to
 the model checkpoint rather than to the scaffold.
@@ -736,12 +932,13 @@ frameworks such as GLib/GObject and \texttt{json-glib} is incomplete.
 The ranker skips files over 2\,500~LOC, which is a real gap for large
 parser files. The public scaffold does not currently isolate agent
 execution in a sandbox; running against untrusted codebases locally is at
-the operator's own risk. Most substantively, this v1 report contains no
-primary benchmark evaluation of the pipeline itself: indicative cost
-numbers are reported in \S\ref{sec:eval-cost}, but controlled comparisons
-against OWASP Benchmark, Juliet CWE, a curated CVE regression set, and a
-Semgrep-only baseline are planned for v2 and are the principal object of
-future work.
+the operator's own risk. Most substantively, this report contains
+empirical \emph{deployment} observations and cost telemetry
+(\S\ref{sec:eval-cost}, \S\ref{sec:eval-yield}) but no controlled
+head-to-head benchmark; the methodological reasons for that choice
+are set out in \S\ref{sec:eval-why-no-bench}. Constructing an
+agentic-pipeline-appropriate, training-contamination-aware benchmark
+remains future work.
 
 % ===========================================================================
 \section{Conclusion}
@@ -751,12 +948,22 @@ We have described Mythos Research Edition, an open-source outside-in
 replication of the scaffold described in Anthropic's April 2026 Mythos
 Preview announcement, built around a general-purpose frontier model. We
 have separated the scaffold contribution from the model contribution,
-surveyed prior agentic security agents, and delineated plausibly closable
-gaps from weight-level ceilings on current evidence. We have not
-independently measured Mythos Research Edition against Project Glasswing;
-a full empirical evaluation is scheduled for v2. The artefact, the
-prompts, the sink catalogues, and the LaTeX source of this report are
-released under Apache~2.0 and are archived at Zenodo for citable reference.
+surveyed prior agentic security agents, delineated plausibly closable
+gaps from weight-level ceilings on current evidence, and reported
+aggregate cost telemetry from real-world coordinated-disclosure
+deployments. We have argued in \S\ref{sec:eval-why-no-bench} that a
+controlled head-to-head benchmark of agentic pipelines is itself an open
+methodological problem, and that until such a benchmark exists the most
+defensible empirical claims are cost telemetry, qualitative
+validator-agreement observations, and coverage of finding categories.
+The Research Edition is the public, finding-first subset of the
+operator's workflow; downstream verification work for published
+advisories uses an internal toolchain that is not part of this
+artefact and is not documented here, in line with the
+responsible-disclosure boundary discussed in
+\S\ref{sec:approach-phase5}. The artefact, the prompts, the sink
+catalogues, and the LaTeX source of this report are released under
+Apache~2.0 and are archived at Zenodo for citable reference.
 
 % ===========================================================================
 \bibliographystyle{plainnat}

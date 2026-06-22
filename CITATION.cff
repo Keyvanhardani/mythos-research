@@ -8,8 +8,8 @@ authors:
     orcid: "https://orcid.org/0009-0000-6003-8826"
     affiliation: "Independent Applied AI Research"
     email: "hello@keyvan.ai"
-date-released: "2026-04-24"
-version: "1.0.0"
+date-released: "2026-05-04"
+version: "2.0.0"
 url: "https://github.com/Keyvanhardani/mythos-research"
 repository-code: "https://github.com/Keyvanhardani/mythos-research"
 license: Apache-2.0
@@ -18,8 +18,11 @@ identifiers:
     value: "10.5281/zenodo.19727857"
     description: "Concept DOI — resolves to the latest archived version on Zenodo."
   - type: doi
+    value: "10.5281/zenodo.20022293"
+    description: "Version DOI for v2.0.0 (current release, v4 scaffold port)."
+  - type: doi
     value: "10.5281/zenodo.19727858"
-    description: "Version DOI for v1.0.2 (first archived release)."
+    description: "Version DOI for v1.0.2 (first archived release, v3.1 scaffold)."
 keywords:
   - large language models
   - vulnerability discovery
